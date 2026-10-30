@@ -5,10 +5,9 @@ import chevRightBold16 from '@assets/pdp/price-history/chev-right-bold-16.svg';
 import trendDown from '@assets/pdp/price-history/trend-down.svg';
 import { SheetDecor } from './SheetDecor';
 import { Chart } from './Chart';
-import { glyph, moneyParts } from './lib/money';
+import { glyph, moneyParts, plainAmount } from './lib/money';
 import { plotWidthFor, type RangeKey } from './lib/chartGeom';
 import { computedPlot } from './lib/plot';
-import { formatMoney } from './lib/priceMath';
 import { buildSeries } from './lib/series';
 import { SHEET_BANNER, SHEET_CHROME, sheetMetrics } from './lib/sheet';
 import styles from './PriceHistorySheet.module.css';
@@ -175,19 +174,17 @@ export function PriceHistorySheet({
                       </div>
                     )}
 
-                    {/* Option A best-price pill — 26505:131181 */}
+                    {/* Option A best-price pill — 26520:132816: tag, then "Best price Đ 2699 with offers" in one line */}
                     {bestPill && (
                       <button type="button" className={styles.bestPill}>
                         <span className={styles.bestPillInner}>
-                          <span className={styles.bestPillPrice}>
-                            {glyph} {formatMoney(bestPrice!)}
-                          </span>
-                          <span className={styles.bestPillLabelWrap}>
-                            <img src={discountTagBest} alt="" aria-hidden className={styles.icon16} />
-                            <span className={styles.bestPillLabel}>
-                              {SHEET_BANNER.labelAccent}
-                              {SHEET_BANNER.label}
+                          <img src={discountTagBest} alt="" aria-hidden className={styles.icon16} />
+                          <span className={styles.bestPillLabel}>
+                            {SHEET_BANNER.labelAccent}{' '}
+                            <span className={styles.bestPillPrice}>
+                              {glyph} {plainAmount(bestPrice!)}
                             </span>
+                            {SHEET_BANNER.label}
                           </span>
                         </span>
                         <img src={chevRightBold16} alt="" aria-hidden className={styles.icon16} />

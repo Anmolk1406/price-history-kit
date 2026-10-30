@@ -157,8 +157,8 @@
 }
 
 /* ---- Option A (26505:131488) ---- */
-/* best-price pill — 26505:131181: 10 under the price, mint gradient over white, 1px #D5F5E4, fully rounded */
-/* custom-color — price history Figma 26505:131181: pill stroke, gradient and ink #0B623F / price #343D54 (no tokens) */
+/* best-price pill — 26520:132816 (was 26505:131181): 10 under the price, mint gradient over white, 1px #D5F5E4, fully rounded */
+/* custom-color — price history Figma 26520:132816: pill stroke, gradient and ink #0B623F (no tokens) */
 .bestPill {
   position: relative;
   margin-top: 10px;
@@ -169,7 +169,7 @@
   gap: 4px;
   padding: 0 8px 0 12px;
   border: 1px solid #d5f5e4;
-  border-radius: 9999px;
+  border-radius: var(--nk-radius-r8);
   background: linear-gradient(270deg, #cff2e4 0%, #ecfff7 100%), var(--nk-palette-white);
   cursor: pointer;
 }
@@ -179,34 +179,23 @@
 }
 
 .bestPillInner {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.bestPillPrice {
-  white-space: nowrap;
-  font-family: var(--nk-font-family);
-  font-size: 14px;
-  line-height: 18px;
-  font-weight: var(--nk-font-weight-bold);
-  letter-spacing: -0.14px;
-  color: #343d54;
-  font-feature-settings: 'case' 1;
-}
-
-.bestPillLabelWrap {
   display: flex;
   align-items: center;
   gap: 4px;
 }
 
+/* 26520:132820: 13/500 in #0B623F, the price inside it 14/700 */
 .bestPillLabel {
   white-space: nowrap;
   font: var(--nk-type-field-b13-medium);
   letter-spacing: var(--nk-field-tracking-b);
   color: #0b623f;
+}
+
+.bestPillPrice {
+  font-size: 14px;
+  font-weight: var(--nk-font-weight-bold);
+  font-feature-settings: 'case' 1;
 }
 
 /* verdict bar under the graph — 26505:131472: 12 inset at the card's bottom, 30h, r8 */
