@@ -7,6 +7,8 @@ import bestsellerBadge from '@assets/pdp/new-pdp/bestseller-badge.svg';
 import comboIcon from '@assets/pdp/new-pdp/bundle-combo.gif';
 import { pdpTokens } from '../../tokens';
 import styles from './SfMainInfo.module.css';
+import { PriceCaseBlock } from '../priceCases/PriceCaseBlock';
+import { priceCaseStore } from '../priceCases/cases';
 import { useReduceMotion } from '../../../../motion/reducedMotion';
 import { useInterval } from '../../../../motion/useInterval';
 import { npaCopy, sfCopy } from '../../../../data/copy/pdp';
@@ -24,7 +26,7 @@ import type { MainInfoView, PdpContent } from '../../../../data/views/pdp';
  * Đ2.35/ml"); the bestseller row gets the 16px numbered star badge. Replaces ProductInfo: same props; Visit Store → plp/listing { query: brand },
  * rating → onReviews, coupon → copies the code (toast), bestseller row → the category PLP.
  */
-export function SfMainInfo({ product, content, info, onReviews }: { product: Product; content: PdpContent; info: MainInfoView; onReviews: () => void }) {
+export function SfMainInfo({ product, content, info, onReviews, onPriceHistory }: { product: Product; content: PdpContent; info: MainInfoView; onReviews: () => void; onPriceHistory?: () => void }) {
   const nav = useNav();
   const price = product.was ?? product.price;
   const sale = product.was ? product.price : undefined;
@@ -32,6 +34,8 @@ export function SfMainInfo({ product, content, info, onReviews }: { product: Pro
   const { nudges, coupons, prepaidOnly, bestseller } = info;
   const { comboSaving } = content;
   const rank = bestseller?.rank;
+  // Price-history cases: the Best-price cell drops the coupon row (24660:52952)
+  const caseState = priceCaseStore.useStore((s) => s.price);
 
   const copyCode = (c: MainInfoView['coupons'][number]) => {
     const code = c.code?.replace(/^CODE:\s*/i, '');
@@ -79,6 +83,9 @@ export function SfMainInfo({ product, content, info, onReviews }: { product: Pro
           </div>
 
           <div className={styles.pricing}>
+            {onPriceHistory ? (
+              <PriceCaseBlock onOpenHistory={onPriceHistory} />
+            ) : (
             <div className={styles.priceRow}>
               <span className={styles.sale}>{money(sale ?? price)}</span>
               {hasDiscount && (
@@ -94,6 +101,7 @@ export function SfMainInfo({ product, content, info, onReviews }: { product: Pro
                 </span>
               )}
             </div>
+            )}
 
             {comboSaving > 0 && (
               <button type="button" className={styles.combo} onClick={() => nav.toast(npaCopy.comboHelp(comboSaving))}>
@@ -131,7 +139,7 @@ export function SfMainInfo({ product, content, info, onReviews }: { product: Pro
             )}
           </div>
 
-          {coupons.length > 0 && (
+          {coupons.length > 0 && !(onPriceHistory && caseState === 'best') && (
             <div className={styles.coupons}>
               {coupons.map((c, idx) => (
                 <Pressable key={`${c.title}${c.code ?? ''}${idx}`} className={styles.coupon} onClick={() => copyCode(c)}>

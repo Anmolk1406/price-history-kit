@@ -1,0 +1,28 @@
+/* Review chrome outside the phone — not part of the PDP design. The kit's --nk-* tokens are scoped to the phone, so
+   this panel carries its own plain values. */
+.side { position: fixed; top: 50%; right: 32px; z-index: 100; transform: translateY(-50%); font-family: Noontree, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+.touch { display: none; font-family: Noontree, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+
+@media (hover: none), (max-width: 860px) {
+  .side { display: none; }
+  .touch { position: fixed; top: max(12px, env(safe-area-inset-top)); right: 12px; z-index: 100; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+}
+
+.pill {
+  padding: 8px 12px; border: 0; border-radius: 999px; background: rgba(22, 22, 22, 0.9); color: #fff;
+  font-family: inherit; font-size: 12px; font-weight: 600; line-height: 16px; cursor: pointer; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25); backdrop-filter: blur(8px);
+}
+
+.panel {
+  display: flex; flex-direction: column; gap: 16px; width: 280px; padding: 16px; box-sizing: border-box;
+  border-radius: 16px; background: #fff; box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
+}
+.title { font-size: 14px; font-weight: 700; line-height: 20px; color: #101628; }
+.group { display: flex; flex-direction: column; gap: 6px; }
+.label { font-size: 12px; font-weight: 500; line-height: 16px; color: #666d85; }
+.segments { display: flex; gap: 4px; padding: 4px; border-radius: 12px; background: #f2f3f7; }
+.segment {
+  flex: 1; min-height: 32px; padding: 0 6px; border: 0; border-radius: 8px; background: none; cursor: pointer;
+  font-family: inherit; font-size: 12px; font-weight: 600; line-height: 16px; color: #666d85;
+}
+.segment[data-on] { background: #fff; color: #101628; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12); }

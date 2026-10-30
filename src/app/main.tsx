@@ -9,10 +9,11 @@ import { parsePageUrl } from '../kit/routes';
 import type { Route, StackEntry } from '../kit/types';
 import '../motion/custom';
 import './preview.css';
+import { CaseSwitcher } from '../flows/pdp/components/priceCases/CaseSwitcher';
 
 /**
  * Dev preview: the phone on its own. Every page is a URL — `/homepage`, `/plp?query=x`, `/orders` (see kit/routes.ts)
- * or the legacy `#/flow/screen`; `/` opens home. Not part of the package.
+ * or the legacy `#/flow/screen`; `/` opens the PDP (price-history prototype). Not part of the package.
  */
 const registry = createRegistry(allFlows);
 
@@ -35,7 +36,8 @@ const readDevice = (): DeviceId | 'auto' => {
 const readUrl = (): { route?: Route; params: Record<string, string> } => {
   const { route, params } = parsePageUrl(window.location);
   const { device: _device, ...rest } = params;
-  return { route: route ? registry.resolve(route)?.route : undefined, params: rest };
+  // price-history prototype: `/` lands on the PDP instead of home
+  return { route: route ? registry.resolve(route)?.route : 'pdp/detail', params: rest };
 };
 
 function Preview() {
@@ -70,6 +72,7 @@ function Preview() {
   return (
     <div className="pg-stage" data-device={device}>
       <NoonPrototype key={page.nonce} flows={allFlows} initialRoute={page.route} initialParams={page.params} device={device} onRouteChange={onRouteChange} />
+      <CaseSwitcher />
     </div>
   );
 }

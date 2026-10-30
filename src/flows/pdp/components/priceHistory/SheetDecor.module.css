@@ -1,0 +1,84 @@
+.abs {
+  position: absolute;
+}
+
+.block {
+  position: absolute;
+  background: var(--nk-palette-black);
+}
+
+.grid {
+  pointer-events: none;
+  position: absolute;
+  left: calc(50% - 0.29px);
+  top: -41.03px;
+  width: 400.423px;
+  height: 309.057px;
+  transform: translateX(-50%);
+  opacity: 0.07;
+}
+
+.horiWrap {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 400.423px;
+  height: 309.057px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rotate {
+  transform: rotate(-90deg);
+}
+
+.rotate img,
+.flipY img,
+.rotFlip img {
+  display: block;
+}
+
+.fade {
+  pointer-events: none;
+  position: absolute;
+  left: 50%;
+  top: calc(50% - 32px);
+  width: calc(100% + 24px); /* 375 on the 351 card */
+  height: 170px;
+  transform: translate(-50%, -50%);
+  /* custom-color — price history Figma: surface/tertiary #F2F3F7 fading from 0 alpha */
+  background-image: linear-gradient(to bottom, rgba(242, 243, 247, 0), var(--nk-field-surface-tertiary));
+}
+
+.glow1,
+.glow2 {
+  pointer-events: none;
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.glow1 {
+  left: -38px;
+  top: -14px;
+  width: 444px;
+  height: 185px;
+}
+
+.glow2 {
+  left: -55px;
+  top: 50px;
+  width: 490px;
+  height: 179px;
+  overflow: hidden;
+}
+
+.flipY {
+  transform: scaleY(-1);
+}
+
+.rotFlip {
+  transform: rotate(180deg) scaleY(-1);
+}

@@ -17,6 +17,9 @@ import { SfFreeGifts } from './components/storefront/SfFreeGifts';
 import { SfGallery } from './components/storefront/SfGallery';
 import { SfHeader, SfRailButtons } from './components/storefront/SfHeader';
 import { SfMainInfo } from './components/storefront/SfMainInfo';
+import { PriceHistorySheet } from './components/priceHistory/PriceHistorySheet';
+import { PRICE_CASES, priceCaseStore, VERDICT } from './components/priceCases/cases';
+import { useDemoStore } from '../../kit/DemoStore';
 import { SfNewerModelCard } from './components/storefront/SfNewerModelCard';
 import { SfPaymentOffers } from './components/storefront/SfPaymentOffers';
 import { SfProductDetails } from './components/storefront/SfProductDetails';
@@ -79,6 +82,11 @@ export function DetailScreen({ params }: ScreenProps<{ productId: string; delive
   const { scrollY } = useScroll({ container: scrollRef });
   const [solid, setSolid] = useState(false);
   const [showTop, setShowTop] = useState(false);
+  // Price-history prototype: the sheet opens from the price block's chip / verdict tooltip
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const priceCase = priceCaseStore.useStore();
+  const caseData = PRICE_CASES[priceCase.price];
+  const { addToCart } = useDemoStore();
   const [selection, setSelection] = useState<VariantSelection>(() => initialSelection(content));
   const [optionsLoading, setOptionsLoading] = useState(false);
   // BottomTabScrollVisibilityProvider (NoonProductDetails onScroll / onScrollEndDrag): the tab bar hides on scroll down
@@ -158,7 +166,7 @@ export function DetailScreen({ params }: ScreenProps<{ productId: string; delive
   // sheet from the gallery's bottom edge, so the image never shows between the cards. Two columns: the right pane.
   const rest = (
     <div className={styles.rest}>
-      <SfMainInfo product={shown} content={content} info={info} onReviews={() => reviewsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })} />
+      <SfMainInfo product={shown} content={content} info={info} onReviews={() => reviewsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })} onPriceHistory={() => setHistoryOpen(true)} />
       <SfBundleCard content={content} />
       <SfSponsoredRow item={content.sponsored} />
       {/* below the first viewport: mounted one beat after the push, so the slide starts on a light frame */}
@@ -224,6 +232,7 @@ export function DetailScreen({ params }: ScreenProps<{ productId: string; delive
       contentStyle={duo ? { paddingBottom: footerH, marginTop: duo.top } : { paddingBottom: footerH }}
       onScroll={tabs.onScroll}
       overlay={
+        <>
         <motion.div ref={footerRef} className={styles.stickyBar} style={{ '--pdp-tab-hide': tabs.tabHide } as never}>
           <SfAtcBar
             product={product}
@@ -234,6 +243,27 @@ export function DetailScreen({ params }: ScreenProps<{ productId: string; delive
             }}
           />
         </motion.div>
+        <PriceHistorySheet
+          // a different case remounts the sheet, so its range pill resets to that case's default
+          key={`${priceCase.price}-${priceCase.history}-${priceCase.option}`}
+          open={historyOpen}
+          onClose={() => setHistoryOpen(false)}
+          price={caseData.price}
+          bestPrice={caseData.bestPrice}
+          layout={priceCase.option}
+          verdict={priceCase.history === 'lowest30' ? VERDICT : undefined}
+          onAddToCart={() => {
+            setHistoryOpen(false);
+            addToCart(product.id, 1);
+            nav.sheet('pdp/added', { productId: product.id, qty: 1 });
+          }}
+          onBuyNow={() => {
+            setHistoryOpen(false);
+            addToCart(product.id, 1);
+            nav.push('checkout');
+          }}
+        />
+        </>
       }
     >
       {dl.hasRail && <SfRailButtons product={product} />}

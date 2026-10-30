@@ -1,0 +1,497 @@
+/* Price history bottom sheet — ported from the "Price history" prototype
+   (components/sheet/PriceHistorySheet.tsx, Figma 24660:45606 / 24660:63803). */
+
+.root {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  font-family: var(--nk-font-family);
+  -webkit-font-smoothing: antialiased;
+}
+
+.root p {
+  margin: 0;
+}
+
+.scrim {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  border: 0;
+  padding: 0;
+  cursor: default;
+  background: var(--nk-sheet-scrim); /* rgba(0,0,0,0.8) */
+}
+
+.frame {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.grabber {
+  display: flex;
+  height: 28px;
+  width: 100%;
+  box-sizing: border-box;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 0;
+  cursor: grab;
+  touch-action: none;
+}
+
+.grabberBar {
+  height: 4px;
+  width: 36px;
+  border-radius: 2px;
+  background: var(--nk-sheet-grabber); /* white 64% */
+}
+
+.wrapper {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0 12px;
+}
+
+.sheet {
+  position: relative;
+  width: 100%;
+  overflow: clip;
+  border-radius: var(--nk-radius-r16);
+  background: var(--nk-field-surface-secondary); /* #F9F9FB */
+  box-shadow: inset 0 0 0 2px var(--nk-palette-white);
+}
+
+.icon16 {
+  display: block;
+  width: 16px;
+  height: 16px;
+}
+
+.icon20 {
+  display: block;
+  width: 20px;
+  height: 20px;
+}
+
+/* ---- price header ---- */
+
+.body {
+  position: relative;
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.header {
+  display: flex;
+  width: 100%;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  flex-direction: column;
+  align-items: center;
+  overflow: clip;
+  border-radius: var(--nk-radius-r12);
+  padding: 20px 0;
+}
+
+.priceBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.priceLabel {
+  font: var(--nk-type-field-b14-medium);
+  letter-spacing: var(--nk-field-tracking-b);
+  color: var(--nk-field-text-tertiary); /* #666D85 */
+}
+
+.price {
+  font-size: 0;
+  font-weight: var(--nk-font-weight-bold);
+  letter-spacing: -0.25px;
+  color: var(--nk-field-text-primary);
+}
+
+.priceMajor {
+  font-size: 34px; /* no 34px type token in the kit */
+  line-height: 0;
+}
+
+.priceMinor {
+  font-size: 24px;
+  line-height: 32px;
+  letter-spacing: -0.25px;
+}
+
+.verdict {
+  margin-top: 8px;
+  display: flex;
+  height: 30px;
+  box-sizing: border-box;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border-radius: 56px;
+  /* custom-color — price history Figma 26211:55298: #913D09 stroke drawn over the white fill. Figma's 6% renders as
+     ~10% on its canvas (sampled: #F4EBE6), so 10% here; the fill runs under the border as it does in Figma. */
+  border: 1px solid rgba(145, 61, 9, 0.1);
+  background: var(--nk-palette-white);
+  background-clip: border-box;
+  padding: 0 12px 0 8px;
+}
+
+.verdictText {
+  white-space: nowrap;
+  text-align: center;
+  font: var(--nk-type-field-b13-medium);
+  letter-spacing: var(--nk-field-tracking-b);
+  color: #913d09; /* custom-color — price history Figma 26211:55300 warm ink (no token) */
+}
+
+/* ---- Option A (26505:131488) ---- */
+/* best-price pill — 26505:131181: 10 under the price, mint gradient over white, 1px #D5F5E4, fully rounded */
+/* custom-color — price history Figma 26505:131181: pill stroke, gradient and ink #0B623F / price #343D54 (no tokens) */
+.bestPill {
+  position: relative;
+  margin-top: 10px;
+  display: flex;
+  height: 32px;
+  box-sizing: border-box;
+  align-items: center;
+  gap: 4px;
+  padding: 0 8px 0 12px;
+  border: 1px solid #d5f5e4;
+  border-radius: 9999px;
+  background: linear-gradient(270deg, #cff2e4 0%, #ecfff7 100%), var(--nk-palette-white);
+  cursor: pointer;
+}
+
+.bestPill:active {
+  opacity: 0.8;
+}
+
+.bestPillInner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.bestPillPrice {
+  white-space: nowrap;
+  font-family: var(--nk-font-family);
+  font-size: 14px;
+  line-height: 18px;
+  font-weight: var(--nk-font-weight-bold);
+  letter-spacing: -0.14px;
+  color: #343d54;
+  font-feature-settings: 'case' 1;
+}
+
+.bestPillLabelWrap {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.bestPillLabel {
+  white-space: nowrap;
+  font: var(--nk-type-field-b13-medium);
+  letter-spacing: var(--nk-field-tracking-b);
+  color: #0b623f;
+}
+
+/* verdict bar under the graph — 26505:131472: 12 inset at the card's bottom, 30h, r8 */
+.cardVerdictWrap {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0 12px 12px;
+}
+
+.cardVerdict {
+  display: flex;
+  height: 30px;
+  box-sizing: border-box;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 0 12px 0 8px;
+  border: 1px solid rgba(145, 61, 9, 0.1); /* custom-color — price history Figma 26505:131473: as .verdict */
+  border-radius: var(--nk-radius-r8);
+  background: var(--nk-palette-white);
+  background-clip: border-box;
+}
+
+/* Option A's verdict bar animates after the graph, once per open:
+     graph    370–1270ms   (sheet slide 370, then the 900ms reveal)
+     pause    1s
+     arrow    2270–2970ms  shown throughout; lifts back up its own direction, then drops down it with a small bounce
+     shimmer  2970ms+      a light band sweeps through the text straight after */
+@keyframes trendDraw {
+  0% {
+    transform: translate(0, 0);
+  }
+  30% {
+    transform: translate(-2.5px, -2.5px);
+  }
+  62% {
+    transform: translate(2px, 2px);
+  }
+  82% {
+    transform: translate(-0.5px, -0.5px);
+  }
+  100% {
+    transform: translate(0, 0);
+  }
+}
+
+.trendIn {
+  animation: trendDraw 700ms cubic-bezier(0.33, 1, 0.68, 1) 2270ms both;
+}
+
+@keyframes textShimmer {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: 0 0;
+  }
+}
+
+/* custom-color — the shimmer's highlight is the verdict ink #913D09 lifted toward peach (no token) */
+.textShimmer {
+  background: linear-gradient(100deg, #913d09 0%, #913d09 40%, #f0b48c 50%, #913d09 60%, #913d09 100%) 100% 0 / 300% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: textShimmer 900ms cubic-bezier(0.4, 0, 0.2, 1) 2970ms both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .trendIn,
+  .textShimmer {
+    animation: none;
+  }
+}
+
+/* ---- chart card ---- */
+
+.chartOuter {
+  display: flex;
+  width: 100%;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0 12px;
+}
+
+.chartCard {
+  display: flex;
+  width: 100%;
+  flex-shrink: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  overflow: clip;
+  border-radius: var(--nk-radius-r12);
+  background: var(--nk-palette-white);
+}
+
+.chartHeader {
+  display: flex;
+  width: 100%;
+  box-sizing: border-box;
+  align-items: center;
+  justify-content: space-between;
+  overflow: clip;
+  padding: 12px 12px 0;
+}
+
+.chartTitle {
+  white-space: nowrap;
+  font: var(--nk-type-field-b14-semibold);
+  letter-spacing: var(--nk-field-tracking-b);
+  color: var(--nk-field-text-primary);
+}
+
+.pills {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 7px;
+}
+
+.pill {
+  display: flex;
+  height: 30px;
+  width: 52px;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  align-items: center;
+  justify-content: center;
+  border-radius: 40px;
+  border: 1px solid var(--nk-field-surface-tertiary); /* #F2F3F7 */
+  background: var(--nk-palette-white);
+  padding: 0 10px;
+  backdrop-filter: blur(4px);
+  cursor: pointer;
+}
+
+.pillActive {
+  border-color: #ececec; /* custom-color — price history Figma: active range pill stroke */
+  background: var(--nk-field-surface-secondary-inverted); /* #1D2539 */
+}
+
+.pillLabel {
+  white-space: nowrap;
+  text-align: center;
+  font: var(--nk-type-field-b12-semibold);
+  letter-spacing: var(--nk-field-tracking-b);
+  color: var(--nk-field-text-tertiary); /* #666D85 */
+}
+
+.pillActive .pillLabel {
+  color: var(--nk-palette-white);
+}
+
+.region {
+  position: relative;
+  display: flex;
+  width: 100%;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  overflow: clip;
+  border-radius: var(--nk-radius-r12);
+  padding: 32px 12px 16px;
+}
+
+.grid {
+  position: relative;
+  display: flex;
+  width: 100%;
+  flex-shrink: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 36px;
+}
+
+.gridRow {
+  display: flex;
+  width: 100%;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 8px;
+}
+
+.yLabel {
+  white-space: nowrap;
+  font: var(--nk-type-field-b12-regular);
+  letter-spacing: var(--nk-field-tracking-b);
+  color: var(--nk-field-text-muted); /* #989FB3 */
+}
+
+.rule {
+  position: relative;
+  height: 1px;
+  min-width: 1px;
+  flex: 1;
+  box-sizing: border-box;
+  border-top: 1px dashed var(--nk-color-border); /* #EAECF0 */
+}
+
+.xAxis {
+  display: flex;
+  width: 100%;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.xLabels {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  white-space: nowrap;
+  text-align: center;
+  letter-spacing: var(--nk-field-tracking-b);
+}
+
+.xLabel {
+  font: var(--nk-type-field-b12-regular);
+  color: var(--nk-field-text-muted);
+}
+
+.xLabelToday {
+  font: var(--nk-type-field-b12-semibold);
+  color: var(--nk-field-text-primary);
+}
+
+/* ---- ATC footer ---- */
+
+.footer {
+  position: relative;
+  display: flex;
+  width: 100%;
+  box-sizing: border-box;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0 12px;
+}
+
+.footerRow {
+  display: flex;
+  height: 72px;
+  width: 100%;
+  box-sizing: border-box;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 0;
+}
+
+.buyNow,
+.addToCart {
+  min-width: 1px;
+  flex: 1;
+  overflow: clip;
+  box-sizing: border-box;
+  border-radius: var(--nk-radius-r10);
+  border: 1px solid var(--nk-color-cta); /* #3866DF */
+  font: var(--nk-type-field-a14-bold);
+  cursor: pointer;
+}
+
+.buyNow {
+  height: 47px;
+  background: var(--nk-palette-white);
+  color: var(--nk-color-cta);
+}
+
+.addToCart {
+  height: 100%;
+  background: var(--nk-color-cta);
+  color: var(--nk-palette-white);
+}
+
+.buyNow:active,
+.addToCart:active {
+  opacity: 0.7;
+}
+
+.homeGap {
+  position: relative;
+  height: 33px;
+  width: 100%;
+}
