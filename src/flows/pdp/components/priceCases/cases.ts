@@ -7,8 +7,6 @@ import { createStore } from '../../../../kit/createStore';
  */
 export type PriceState = 'normal' | 'best' | 'ltd';
 export type HistoryState = 'notLowest' | 'lowest30';
-/** Two competing designs for the sheet's best price and verdict. Everything else is shared. */
-export type DesignOption = 'a' | 'b';
 
 export type CaseOption<T> = { id: T; label: string; note: string };
 
@@ -21,11 +19,6 @@ export const PRICE_STATES: CaseOption<PriceState>[] = [
 export const HISTORY_STATES: CaseOption<HistoryState>[] = [
   { id: 'notLowest', label: 'Not lowest', note: 'Price history chip beside the price' },
   { id: 'lowest30', label: 'Lowest in 30 days', note: 'Verdict tooltip carries the entry point' },
-];
-
-export const DESIGN_OPTIONS: CaseOption<DesignOption>[] = [
-  { id: 'a', label: 'Option A', note: 'Best price as a pill under the current price, verdict under the graph (26505:131488)' },
-  { id: 'b', label: 'Option B', note: 'Best price as a label on the graph (26442:40062)' },
 ];
 
 export const VERDICT = 'Lowest price in 30 days';
@@ -61,19 +54,18 @@ const read = <T extends string>(key: string, allowed: readonly T[], fallback: T)
   return v && (allowed as readonly string[]).includes(v) ? (v as T) : fallback;
 };
 
-/** The case being shown. Seeded from `?case=best&history=lowest30&option=b` so any cell can be linked. */
+/** The case being shown. Seeded from `?case=best&history=lowest30` so any cell can be linked. */
 export const priceCaseStore = createStore({
   price: read<PriceState>('case', ['normal', 'best', 'ltd'], 'normal'),
   history: read<HistoryState>('history', ['notLowest', 'lowest30'], 'notLowest'),
-  option: read<DesignOption>('option', ['a', 'b'], 'a'),
 });
 
 /** Keep the address bar's query in step with the switcher, so the URL always opens the cell on screen. */
 priceCaseStore.subscribe(() => {
-  const { price, history, option } = priceCaseStore.get();
+  const { price, history } = priceCaseStore.get();
   const q = new URLSearchParams(window.location.search);
   q.set('case', price);
   q.set('history', history);
-  q.set('option', option);
+  q.delete('option');
   window.history.replaceState(window.history.state, '', `${window.location.pathname}?${q}`);
 });

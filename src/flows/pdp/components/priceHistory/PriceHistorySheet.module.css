@@ -131,23 +131,6 @@
   letter-spacing: -0.25px;
 }
 
-.verdict {
-  margin-top: 8px;
-  display: flex;
-  height: 30px;
-  box-sizing: border-box;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  border-radius: 56px;
-  /* custom-color — price history Figma 26211:55298: #913D09 stroke drawn over the white fill. Figma's 6% renders as
-     ~10% on its canvas (sampled: #F4EBE6), so 10% here; the fill runs under the border as it does in Figma. */
-  border: 1px solid rgba(145, 61, 9, 0.1);
-  background: var(--nk-palette-white);
-  background-clip: border-box;
-  padding: 0 12px 0 8px;
-}
-
 .verdictText {
   white-space: nowrap;
   text-align: center;
@@ -156,7 +139,6 @@
   color: #913d09; /* custom-color — price history Figma 26211:55300 warm ink (no token) */
 }
 
-/* ---- Option A (26505:131488) ---- */
 /* best-price pill — 26520:132816 (was 26505:131181): 10 under the price, mint gradient over white, 1px #D5F5E4, fully rounded */
 /* custom-color — price history Figma 26520:132816: pill stroke, gradient and ink #0B623F (no tokens) */
 .bestPill {
@@ -213,13 +195,13 @@
   justify-content: center;
   gap: 4px;
   padding: 0 12px 0 8px;
-  border: 1px solid rgba(145, 61, 9, 0.1); /* custom-color — price history Figma 26505:131473: as .verdict */
+  border: 1px solid rgba(145, 61, 9, 0.1); /* custom-color — price history Figma 26505:131473: #913D09 stroke; Figma's 6% renders as ~10% (sampled #F4EBE6) */
   border-radius: var(--nk-radius-r8);
   background: var(--nk-palette-white);
   background-clip: border-box;
 }
 
-/* Option A's verdict bar animates after the graph, once per open:
+/* The verdict bar animates after the graph, once per open:
      graph    370–1270ms   (sheet slide 370, then the 900ms reveal)
      pause    1s
      arrow    2270–2970ms  shown throughout; lifts back up its own direction, then drops down it with a small bounce

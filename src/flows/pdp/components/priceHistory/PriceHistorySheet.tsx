@@ -42,7 +42,6 @@ export function PriceHistorySheet({
   onClose,
   price,
   bestPrice,
-  layout = 'a',
   verdict,
   onAddToCart,
   onBuyNow,
@@ -51,17 +50,14 @@ export function PriceHistorySheet({
   onClose: () => void;
   price: number;
   bestPrice?: number;
-  /** Option A (26505:131488): best price in a pill under the price, verdict as a bar at the bottom of the chart card.
-   *  Option B (26442:40062): verdict pill under the price, best price labelled on the graph. */
-  layout?: 'a' | 'b';
   verdict?: string;
   onAddToCart?: () => void;
   onBuyNow?: () => void;
 }) {
-  // The sheet composes per case and option: a best price and a verdict each add their element (where depends on
-  // the option), and the sheet's height follows.
-  const bestPill = bestPrice !== undefined && layout === 'a';
-  const v = sheetMetrics({ verdict: !!verdict, layout, bestPill });
+  // The sheet composes per case (26505:131488): a best price adds a pill under the price, a verdict adds a bar at the
+  // bottom of the chart card, and the sheet's height follows.
+  const bestPill = bestPrice !== undefined;
+  const v = sheetMetrics({ verdict: !!verdict, bestPill });
   const [range, setRange] = useState<RangeKey>(v.defaultRange);
   // The graph waits out the slide so it draws on a sheet that has already
   // landed; a tab change has no slide to wait for, so it draws immediately.
@@ -87,8 +83,7 @@ export function PriceHistorySheet({
 
   // Series ends exactly on `price`; with a verdict, that last point is the 30-day low.
   const series = useMemo(() => buildSeries(price, new Date(), { endOnLow: !!verdict }), [price, verdict]);
-  const chartBest = layout === 'b' ? bestPrice : undefined;
-  const plot = useMemo(() => computedPlot(series, range, plotWidthFor(regionW), chartBest !== undefined ? [chartBest] : []), [series, range, regionW, chartBest]);
+  const plot = useMemo(() => computedPlot(series, range, plotWidthFor(regionW)), [series, range, regionW]);
   // 26211:55300 — "Price dropped by 20% in last 30 days": the drop from the series' price 30 days ago.
   const monthAgo = series[series.length - 30]?.price ?? price;
   const dropPct = Math.max(0, Math.round(((monthAgo - price) / monthAgo) * 100));
@@ -165,16 +160,7 @@ export function PriceHistorySheet({
                       </p>
                     </div>
 
-                    {/* Verdict pill — 26211:55298. h-30 explicit so the 1px stroke
-                        sits inside, as it does in Figma. */}
-                    {verdict && layout === 'b' && (
-                      <div className={styles.verdict}>
-                        <img src={trendDown} alt="" aria-hidden className={styles.icon20} />
-                        <p className={styles.verdictText}>{verdictText}</p>
-                      </div>
-                    )}
-
-                    {/* Option A best-price pill — 26520:132816: tag, then "Best price Đ 2699 with offers" in one line */}
+                    {/* Best-price pill — 26520:132816: tag, then "Best price Đ 2699 with offers" in one line */}
                     {bestPill && (
                       <button type="button" className={styles.bestPill}>
                         <span className={styles.bestPillInner}>
@@ -241,11 +227,11 @@ export function PriceHistorySheet({
 
                         {/* plot + scrub — 24660:45721 / 66553, pointer 24660:66565.
                             Keyed so switching tab remounts it and replays the reveal. */}
-                        <Chart key={range} plot={plot} regionWidth={regionW} enterDelay={chartDelay} bestPrice={chartBest} />
+                        <Chart key={range} plot={plot} regionWidth={regionW} enterDelay={chartDelay} />
                       </div>
 
-                      {/* Option A verdict, under the graph — 26505:131472 */}
-                      {verdict && layout === 'a' && (
+                      {/* Verdict, under the graph — 26505:131472 */}
+                      {verdict && (
                         <div className={styles.cardVerdictWrap}>
                           <div className={styles.cardVerdict}>
                             <img src={trendDown} alt="" aria-hidden className={`${styles.icon20} ${styles.trendIn}`} />

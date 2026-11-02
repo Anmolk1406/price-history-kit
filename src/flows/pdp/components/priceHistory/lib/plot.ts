@@ -27,10 +27,12 @@ export type PlotData = {
   lastDate: Date;
   /** Marker box top, in chart-region coordinates, before any scrubbing. */
   restMarkerTop: number;
+  /** Lowest price in the window — the read-out turns warm ink when it sits on it. */
+  minPrice: number;
 };
 
-export function computedPlot(series: PricePoint[], range: RangeKey, plotWidth: number, alsoFit: number[] = []): PlotData {
-  const w = buildWindow(series, range, plotWidth, alsoFit);
+export function computedPlot(series: PricePoint[], range: RangeKey, plotWidth: number): PlotData {
+  const w = buildWindow(series, range, plotWidth);
   return {
     fill: w.fillPath,
     line: w.linePath,
@@ -46,13 +48,8 @@ export function computedPlot(series: PricePoint[], range: RangeKey, plotWidth: n
     firstDate: w.points[0].date,
     lastDate: w.points[w.points.length - 1].date,
     restMarkerTop: 32 + 1 + w.last.y - 4,
+    minPrice: Math.min(...w.points.flatMap((pt) => (pt.price === null ? [] : [pt.price]))),
   };
-}
-
-/** Plot y for a price, on the same linear axis. */
-export function yAtPrice(p: PlotData, price: number) {
-  const t = (p.axisTop - price) / (p.axisTop - p.axisBottom || 1);
-  return PLOT.yTop + t * (PLOT.yBottom - PLOT.yTop);
 }
 
 /** Invert plot y back to a price; exact, since the computed axis is linear. */

@@ -245,12 +245,11 @@ export function DetailScreen({ params }: ScreenProps<{ productId: string; delive
         </motion.div>
         <PriceHistorySheet
           // a different case remounts the sheet, so its range pill resets to that case's default
-          key={`${priceCase.price}-${priceCase.history}-${priceCase.option}`}
+          key={`${priceCase.price}-${priceCase.history}`}
           open={historyOpen}
           onClose={() => setHistoryOpen(false)}
           price={caseData.price}
           bestPrice={caseData.bestPrice}
-          layout={priceCase.option}
           verdict={priceCase.history === 'lowest30' ? VERDICT : undefined}
           onAddToCart={() => {
             setHistoryOpen(false);

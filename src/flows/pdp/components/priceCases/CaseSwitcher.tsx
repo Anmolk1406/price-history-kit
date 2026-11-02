@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { DESIGN_OPTIONS, HISTORY_STATES, PRICE_STATES, priceCaseStore, type CaseOption } from './cases';
+import { HISTORY_STATES, PRICE_STATES, priceCaseStore, type CaseOption } from './cases';
 import styles from './CaseSwitcher.module.css';
 
 /**
@@ -24,11 +24,10 @@ export function CaseSwitcher() {
 }
 
 function Panel() {
-  const { price, history, option } = priceCaseStore.useStore();
+  const { price, history } = priceCaseStore.useStore();
   return (
     <div className={styles.panel}>
       <div className={styles.title}>Price history cases</div>
-      <Group label="Design option" options={DESIGN_OPTIONS} value={option} onChange={(v) => priceCaseStore.patch({ option: v })} />
       <Group label="Price block" options={PRICE_STATES} value={price} onChange={(v) => priceCaseStore.patch({ price: v })} />
       <Group label="30-day verdict" options={HISTORY_STATES} value={history} onChange={(v) => priceCaseStore.patch({ history: v })} />
     </div>

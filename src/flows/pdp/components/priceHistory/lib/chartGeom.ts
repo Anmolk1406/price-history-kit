@@ -59,13 +59,12 @@ export const WINDOWS = {
 
 export type RangeKey = keyof typeof WINDOWS;
 
-/** `alsoFit` are prices drawn on the plot that aren't in the series (option B's best price), so the axis must reach them. */
-export function buildWindow(all: PricePoint[], range: RangeKey, plotWidth: number = PLOT.width, alsoFit: number[] = []): ChartWindow {
+export function buildWindow(all: PricePoint[], range: RangeKey, plotWidth: number = PLOT.width): ChartWindow {
   const { days, labels } = WINDOWS[range];
   const points = all.slice(Math.max(0, all.length - days));
   const prices = points.map((p) => p.price).filter((p): p is number => p !== null);
 
-  const axis = computeYAxis([...prices, ...alsoFit]);
+  const axis = computeYAxis(prices);
   // computeYAxis returns ascending; the label rows read top-down.
   const yLabels = [...axis.gridValues].reverse();
 

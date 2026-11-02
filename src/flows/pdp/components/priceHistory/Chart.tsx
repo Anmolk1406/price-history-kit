@@ -2,9 +2,8 @@ import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from
 import crosshair from '@assets/pdp/price-history/hover-crosshair.svg';
 import hoverDot from '@assets/pdp/price-history/hover-dot.svg';
 import hoverMarker from '@assets/pdp/price-history/hover-marker.svg';
-import chevron from '@assets/pdp/price-history/best-chevron.svg';
 import { PLOT, REGION_PLOT_LEFT } from './lib/chartGeom';
-import { dateAtX, fmtDay, priceAtY, yAtPrice, type PlotData } from './lib/plot';
+import { dateAtX, fmtDay, priceAtY, type PlotData } from './lib/plot';
 import { formatMoney } from './lib/priceMath';
 import { glyph } from './lib/money';
 import styles from './Chart.module.css';
@@ -23,11 +22,6 @@ const REGION_PAD_RIGHT = 12;
  *  waits for the graph to finish drawing before it appears. */
 const REVEAL_MS = 900;
 
-/** Scrubbing (drag/hover to read any day) and the price + date read-out pill are switched off for now.
- *  Flip both to true to bring them back; everything they need is still wired up. */
-const SCRUB_ENABLED = false;
-const SHOW_READOUT = false;
-
 /** The plot plus its scrub interaction.
  *
  *  The curve is rendered inline so the crosshair can ask the line where it is at
@@ -40,15 +34,12 @@ export function Chart({
   pointerAtRest = true,
   /** Hold the reveal back this long after mount — the sheet's slide-in. 0 on a tab change. */
   enterDelay = 0,
-  bestPrice,
 }: {
   plot: PlotData;
   /** Chart region width (the white card), for clamping the read-out. */
   regionWidth: number;
   pointerAtRest?: boolean;
   enterDelay?: number;
-  /** Option B: the parked pointer becomes the best-price label (26442:40292). */
-  bestPrice?: number;
 }) {
   const gradientId = useId();
   const lineRef = useRef<SVGPathElement | null>(null);
@@ -126,6 +117,7 @@ export function Chart({
   const markerTopRegion = active ? REGION_Y + sampledY! - 4 : restMarkerTop;
   const readPrice = active ? priceAtY(plot, sampledY!) : priceAtY(plot, restMarkerTop + 4 - REGION_Y);
   const readDate = active ? dateAtX(plot, scrubX!) : plot.lastDate;
+  const priceText = formatMoney(readPrice);
 
   return (
     <>
@@ -140,7 +132,6 @@ export function Chart({
           clipPath: drawing ? undefined : 'inset(0 100% 0 0)',
         }}
         onPointerDown={(e) => {
-          if (!SCRUB_ENABLED) return;
           dragging.current = true;
           try {
             e.currentTarget.setPointerCapture(e.pointerId);
@@ -151,7 +142,7 @@ export function Chart({
         }}
         onPointerMove={(e) => {
           // drag on touch; plain hover is enough with a mouse
-          if (SCRUB_ENABLED && (dragging.current || e.pointerType === 'mouse')) onScrub(e.clientX);
+          if ((dragging.current || e.pointerType === 'mouse')) onScrub(e.clientX);
         }}
         onPointerUp={endScrub}
         onPointerCancel={endScrub}
@@ -179,25 +170,16 @@ export function Chart({
 
       {/* Scrubbing shows the pointer immediately; the parked pointer waits for
           the reveal and then animates in. */}
-      {!active && pointerAtRest && pointerIn && bestPrice !== undefined ? (
-        <BestPricePointer
-          x={REGION_X + plot.xEnd}
-          markerTop={REGION_Y + yAtPrice(plot, bestPrice) - 4}
+      {(active || (pointerAtRest && pointerIn)) && (
+        <Pointer
+          x={REGION_X + markerX}
+          markerTop={markerTopRegion}
           innerRight={regionWidth - REGION_PAD_RIGHT}
-          priceText={formatMoney(bestPrice)}
+          priceText={priceText}
+          dateText={fmtDay(readDate)}
+          lowest={priceText === formatMoney(plot.minPrice)}
+          animateIn={!active}
         />
-      ) : (
-        (active || (pointerAtRest && pointerIn)) && (
-          <Pointer
-            x={REGION_X + markerX}
-            markerTop={markerTopRegion}
-            innerRight={regionWidth - REGION_PAD_RIGHT}
-            priceText={formatMoney(readPrice)}
-            dateText={fmtDay(readDate)}
-            animateIn={!active}
-            showReadout={SHOW_READOUT}
-          />
-        )
       )}
     </>
   );
@@ -215,16 +197,17 @@ function Pointer({
   innerRight,
   priceText,
   dateText,
+  lowest,
   animateIn,
-  showReadout,
 }: {
   x: number;
   markerTop: number;
   innerRight: number;
   priceText: string;
   dateText: string;
+  /** On the window's lowest price — 4.png: the price in warm ink. */
+  lowest: boolean;
   animateIn: boolean;
-  showReadout: boolean;
 }) {
   // Measured rather than assumed — the pill's width moves with the value and the
   // date. useLayoutEffect so the clamp is applied before the browser paints.
@@ -246,48 +229,18 @@ function Pointer({
         </div>
       </div>
 
-      {showReadout && (
-        <div ref={wrapRef} className={styles.pillWrap} style={{ left: pillX, top: 9 }}>
-          <div className={`${styles.pill} ${animateIn ? styles.pillIn : ''}`} aria-live="polite">
-            <p className={styles.pillPrice}>
-              {glyph} {priceText}
-            </p>
-            <img src={hoverDot} alt="" aria-hidden className={styles.dot} />
-            <p className={styles.pillDate}>{dateText}</p>
-          </div>
+      <div ref={wrapRef} className={styles.pillWrap} style={{ left: pillX, top: 9 }}>
+        <div className={`${styles.pill} ${animateIn ? styles.pillIn : ''}`} aria-live="polite">
+          <p className={`${styles.pillPrice} ${lowest ? styles.pillPriceLowest : ''}`}>
+            {glyph} {priceText}
+          </p>
+          <img src={hoverDot} alt="" aria-hidden className={styles.dot} />
+          <p className={styles.pillDate}>{dateText}</p>
         </div>
-      )}
+      </div>
 
       <img src={hoverMarker} alt="" aria-hidden className={`${styles.marker} ${animateIn ? styles.dotIn : ''}`} style={{ left: x - 4, top: markerTop }} />
     </>
   );
 }
 
-/** Option B's parked pointer — Group 28267 (26442:40292, pill 26469:36636): the best-price pill pinned to the region's right inset,
- *  a green dashed drop from the pill to the best price's own height at today's x, and a green marker there.
- *
- *  It mounts once the graph has drawn (the same timer as the parked pointer) and then plays in sequence, all CSS:
- *  the marker pops in, the line grows up out of it, the pill lands on the line's tip as a bead and stretches
- *  leftwards into the full pill, its label slides in, and a soft shimmer sweeps through it. Delays live in
- *  Chart.module.css (best*). */
-const BEST_PILL_TOP = 12;
-const BEST_PILL_H = 32;
-
-function BestPricePointer({ x, markerTop, innerRight, priceText }: { x: number; markerTop: number; innerRight: number; priceText: string }) {
-  const lineTop = BEST_PILL_TOP + BEST_PILL_H;
-  return (
-    <>
-      <div aria-hidden className={styles.bestLine} style={{ left: x - 0.4, top: lineTop, height: Math.max(0, markerTop + 4 - lineTop) }} />
-      <div className={styles.bestPill} style={{ right: `calc(100% - ${innerRight}px)`, top: BEST_PILL_TOP }}>
-        <p className={styles.bestPillText}>
-          <span className={styles.bestPillPrice}>
-            {glyph} {priceText}
-          </span>{' '}
-          with offers
-        </p>
-        <img src={chevron} alt="" aria-hidden className={styles.bestChevron} />
-      </div>
-      <span aria-hidden className={styles.bestMarker} style={{ left: x - 4, top: markerTop }} />
-    </>
-  );
-}
