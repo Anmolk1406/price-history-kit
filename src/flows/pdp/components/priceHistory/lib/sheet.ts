@@ -5,8 +5,8 @@ import type { RangeKey } from './chartGeom';
  *
  *    grabber (28)           outside the card
  *    price header           20 + container + extra + 20
- *                             [10 + 32] best-price pill (26505:131181)
- *    chart card (296)       + [30 + 12] verdict bar (26505:131472)
+ *                             [8 + 30] verdict pill (26211:55298)
+ *    chart card (296)
  *    ATC footer (72)        always
  *    home indicator (33)    outside the card
  *
@@ -30,16 +30,13 @@ const ATC_H = 72;
 const PRICE_GAP = 4;
 const PRICE_CONTAINER_H = 56;
 
-/** 26505:131488: the best price is a 32h pill 10 under the price, and the verdict is a 30h bar inside the chart
- *  card's bottom (12 inset). */
-const BEST_PILL_GAP = 10;
-const BEST_PILL_H = 32;
-const CARD_VERDICT_H = 30 + 12;
+const VERDICT_H = 30;
+const VERDICT_GAP = 8;
 
-export function sheetMetrics(opts: { verdict: boolean; bestPill: boolean }): SheetMetrics {
-  const headerExtra = opts.bestPill ? BEST_PILL_GAP + BEST_PILL_H : 0;
+export function sheetMetrics(opts: { verdict: boolean }): SheetMetrics {
+  const headerExtra = opts.verdict ? VERDICT_GAP + VERDICT_H : 0;
   const headerHeight = 20 + PRICE_CONTAINER_H + headerExtra + 20;
-  const cardHeight = CHART_CARD_H + (opts.verdict ? CARD_VERDICT_H : 0);
+  const cardHeight = CHART_CARD_H;
   const sheetHeight = headerHeight + cardHeight + ATC_H;
   const height = GRABBER_H + sheetHeight + HOME_H;
   return {
@@ -51,12 +48,6 @@ export function sheetMetrics(opts: { verdict: boolean; bestPill: boolean }): She
     defaultRange: '1M',
   };
 }
-
-/** Best-price copy (the value comes from the `bestPrice` prop). */
-export const SHEET_BANNER = {
-  labelAccent: 'Best price',
-  label: ' with offers',
-} as const;
 
 /** All three drawn frames inset the x-axis by 48. */
 export const X_AXIS_PAD: Record<RangeKey, number> = { '1M': 48, '3M': 48, '1Y': 48 };

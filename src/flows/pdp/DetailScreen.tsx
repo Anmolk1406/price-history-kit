@@ -249,7 +249,6 @@ export function DetailScreen({ params }: ScreenProps<{ productId: string; delive
           open={historyOpen}
           onClose={() => setHistoryOpen(false)}
           price={caseData.price}
-          bestPrice={caseData.bestPrice}
           verdict={priceCase.history === 'lowest30' ? VERDICT : undefined}
           onAddToCart={() => {
             setHistoryOpen(false);

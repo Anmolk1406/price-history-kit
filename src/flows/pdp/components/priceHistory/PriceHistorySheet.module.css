@@ -66,12 +66,6 @@
   box-shadow: inset 0 0 0 2px var(--nk-palette-white);
 }
 
-.icon16 {
-  display: block;
-  width: 16px;
-  height: 16px;
-}
-
 .icon20 {
   display: block;
   width: 20px;
@@ -139,69 +133,24 @@
   color: #913d09; /* custom-color — price history Figma 26211:55300 warm ink (no token) */
 }
 
-/* best-price pill — 26520:132816 (was 26505:131181): 10 under the price, mint gradient over white, 1px #D5F5E4, fully rounded */
-/* custom-color — price history Figma 26520:132816: pill stroke, gradient and ink #0B623F (no tokens) */
-.bestPill {
-  position: relative;
-  margin-top: 10px;
-  display: flex;
-  height: 32px;
-  box-sizing: border-box;
-  align-items: center;
-  gap: 4px;
-  padding: 0 8px 0 12px;
-  border: 1px solid #d5f5e4;
-  border-radius: var(--nk-radius-r8);
-  background: linear-gradient(270deg, #cff2e4 0%, #ecfff7 100%), var(--nk-palette-white);
-  cursor: pointer;
-}
-
-.bestPill:active {
-  opacity: 0.8;
-}
-
-.bestPillInner {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-/* 26520:132820: 13/500 in #0B623F, the price inside it 14/700 */
-.bestPillLabel {
-  white-space: nowrap;
-  font: var(--nk-type-field-b13-medium);
-  letter-spacing: var(--nk-field-tracking-b);
-  color: #0b623f;
-}
-
-.bestPillPrice {
-  font-size: 14px;
-  font-weight: var(--nk-font-weight-bold);
-  font-feature-settings: 'case' 1;
-}
-
-/* verdict bar under the graph — 26505:131472: 12 inset at the card's bottom, 30h, r8 */
-.cardVerdictWrap {
-  width: 100%;
-  box-sizing: border-box;
-  padding: 0 12px 12px;
-}
-
-.cardVerdict {
+.verdict {
+  margin-top: 8px;
   display: flex;
   height: 30px;
   box-sizing: border-box;
   align-items: center;
   justify-content: center;
   gap: 4px;
-  padding: 0 12px 0 8px;
-  border: 1px solid rgba(145, 61, 9, 0.1); /* custom-color — price history Figma 26505:131473: #913D09 stroke; Figma's 6% renders as ~10% (sampled #F4EBE6) */
-  border-radius: var(--nk-radius-r8);
+  border-radius: 56px;
+  /* custom-color — price history Figma 26211:55298: #913D09 stroke drawn over the white fill. Figma's 6% renders as
+     ~10% on its canvas (sampled: #F4EBE6), so 10% here; the fill runs under the border as it does in Figma. */
+  border: 1px solid rgba(145, 61, 9, 0.1);
   background: var(--nk-palette-white);
   background-clip: border-box;
+  padding: 0 12px 0 8px;
 }
 
-/* The verdict bar animates after the graph, once per open:
+/* The verdict pill animates after the graph, once per open:
      graph    370–1270ms   (sheet slide 370, then the 900ms reveal)
      pause    1s
      arrow    2270–2970ms  shown throughout; lifts back up its own direction, then drops down it with a small bounce

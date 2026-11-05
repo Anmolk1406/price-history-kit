@@ -1,15 +1,13 @@
 import { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion, useDragControls, useReducedMotion, type PanInfo } from 'motion/react';
-import discountTagBest from '@assets/pdp/price-history/discount-tag-best.svg';
-import chevRightBold16 from '@assets/pdp/price-history/chev-right-bold-16.svg';
 import trendDown from '@assets/pdp/price-history/trend-down.svg';
 import { SheetDecor } from './SheetDecor';
 import { Chart } from './Chart';
-import { glyph, moneyParts, plainAmount } from './lib/money';
+import { glyph, moneyParts } from './lib/money';
 import { plotWidthFor, type RangeKey } from './lib/chartGeom';
 import { computedPlot } from './lib/plot';
 import { buildSeries } from './lib/series';
-import { SHEET_BANNER, SHEET_CHROME, sheetMetrics } from './lib/sheet';
+import { SHEET_CHROME, sheetMetrics } from './lib/sheet';
 import styles from './PriceHistorySheet.module.css';
 
 /** Sheet motion, from the noon-motion standard (choreography "Bottom sheet"):
@@ -41,7 +39,6 @@ export function PriceHistorySheet({
   open,
   onClose,
   price,
-  bestPrice,
   verdict,
   onAddToCart,
   onBuyNow,
@@ -49,15 +46,12 @@ export function PriceHistorySheet({
   open: boolean;
   onClose: () => void;
   price: number;
-  bestPrice?: number;
   verdict?: string;
   onAddToCart?: () => void;
   onBuyNow?: () => void;
 }) {
-  // The sheet composes per case (26505:131488): a best price adds a pill under the price, a verdict adds a bar at the
-  // bottom of the chart card, and the sheet's height follows.
-  const bestPill = bestPrice !== undefined;
-  const v = sheetMetrics({ verdict: !!verdict, bestPill });
+  // A verdict adds its pill under the price, and the sheet's height follows.
+  const v = sheetMetrics({ verdict: !!verdict });
   const [range, setRange] = useState<RangeKey>(v.defaultRange);
   // The graph waits out the slide so it draws on a sheet that has already
   // landed; a tab change has no slide to wait for, so it draws immediately.
@@ -160,21 +154,13 @@ export function PriceHistorySheet({
                       </p>
                     </div>
 
-                    {/* Best-price pill — 26520:132816: tag, then "Best price Đ 2699 with offers" in one line */}
-                    {bestPill && (
-                      <button type="button" className={styles.bestPill}>
-                        <span className={styles.bestPillInner}>
-                          <img src={discountTagBest} alt="" aria-hidden className={styles.icon16} />
-                          <span className={styles.bestPillLabel}>
-                            {SHEET_BANNER.labelAccent}{' '}
-                            <span className={styles.bestPillPrice}>
-                              {glyph} {plainAmount(bestPrice!)}
-                            </span>
-                            {SHEET_BANNER.label}
-                          </span>
-                        </span>
-                        <img src={chevRightBold16} alt="" aria-hidden className={styles.icon16} />
-                      </button>
+                    {/* Verdict pill — 26211:55298. h-30 explicit so the 1px stroke sits inside, as it does in Figma.
+                        Animates once the graph has drawn: the arrow, then a shimmer through the text. */}
+                    {verdict && (
+                      <div className={styles.verdict}>
+                        <img src={trendDown} alt="" aria-hidden className={`${styles.icon20} ${styles.trendIn}`} />
+                        <p className={`${styles.verdictText} ${styles.textShimmer}`}>{verdictText}</p>
+                      </div>
                     )}
                   </div>
 
@@ -230,15 +216,6 @@ export function PriceHistorySheet({
                         <Chart key={range} plot={plot} regionWidth={regionW} enterDelay={chartDelay} />
                       </div>
 
-                      {/* Verdict, under the graph — 26505:131472 */}
-                      {verdict && (
-                        <div className={styles.cardVerdictWrap}>
-                          <div className={styles.cardVerdict}>
-                            <img src={trendDown} alt="" aria-hidden className={`${styles.icon20} ${styles.trendIn}`} />
-                            <p className={`${styles.verdictText} ${styles.textShimmer}`}>{verdictText}</p>
-                          </div>
-                        </div>
-                      )}
                     </div>
                   </div>
                 </div>
