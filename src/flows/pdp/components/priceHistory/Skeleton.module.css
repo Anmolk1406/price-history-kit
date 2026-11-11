@@ -1,0 +1,53 @@
+/* Price history loading skeleton — Figma 26711:36897.
+   Every placeholder shares one shimmer: a soft highlight travels left to right across the whole sheet, so the blocks
+   light up in turn and the sheet's own background is never touched. The sheet body animates --sk-sweep (the
+   highlight's x, in body px); each block carries its own x (--sk-x, set from layout) and offsets its gradient by it. */
+@property --sk-sweep {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: -160px;
+}
+
+/* 1.6s travel, ease-in-out, then a 0.3s rest before the next pass */
+@keyframes skSweep {
+  0% {
+    --sk-sweep: -160px;
+  }
+  84.2%,
+  100% {
+    --sk-sweep: 520px;
+  }
+}
+
+.sweep {
+  animation: skSweep 1900ms cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+
+/* custom-color — skeleton fill #EEF0F4 and its highlight #F8F9FB on the sheet's #F9F9FB (no tokens) */
+.sk {
+  --sk-base: #eef0f4;
+  --sk-lift: #f8f9fb;
+  display: block;
+  flex-shrink: 0;
+  border-radius: 999px;
+  background-color: var(--sk-base);
+  background-image: linear-gradient(90deg, transparent 0, var(--sk-lift) 120px, transparent 240px);
+  background-repeat: no-repeat;
+  background-size: 240px 100%;
+  background-position: calc(var(--sk-sweep) - var(--sk-x, 0px) - 120px) 0;
+}
+
+/* On the white chart card the placeholders take surface/secondary (Figma 26715:36824), lifting to white. */
+.onCard {
+  --sk-base: var(--nk-field-surface-secondary); /* #F9F9FB */
+  --sk-lift: var(--nk-palette-white);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sweep {
+    animation: none;
+  }
+  .sk {
+    background-image: none;
+  }
+}

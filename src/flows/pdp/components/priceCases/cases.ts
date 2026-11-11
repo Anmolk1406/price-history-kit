@@ -21,6 +21,18 @@ export const HISTORY_STATES: CaseOption<HistoryState>[] = [
   { id: 'lowest30', label: 'Lowest in 30 days', note: 'Verdict tooltip carries the entry point' },
 ];
 
+/** How the sheet's loading skeleton (Figma 26711:36897) is staged. */
+export type LoadingState = 'brief' | 'hold' | 'off';
+
+export const LOADING_STATES: CaseOption<LoadingState>[] = [
+  { id: 'brief', label: '1.5s', note: 'Skeleton for 1.5s after the sheet lands, then the data' },
+  { id: 'hold', label: 'Hold', note: 'Skeleton stays up, to review the shimmer' },
+  { id: 'off', label: 'Off', note: 'Data straight away' },
+];
+
+/** How long each loading state holds the skeleton; null holds it until the sheet closes. */
+export const LOADING_MS: Record<LoadingState, number | null> = { brief: 1500, hold: null, off: 0 };
+
 export const VERDICT = 'Lowest price in 30 days';
 
 export type PriceCase = {
@@ -58,14 +70,16 @@ const read = <T extends string>(key: string, allowed: readonly T[], fallback: T)
 export const priceCaseStore = createStore({
   price: read<PriceState>('case', ['normal', 'best', 'ltd'], 'normal'),
   history: read<HistoryState>('history', ['notLowest', 'lowest30'], 'notLowest'),
+  loading: read<LoadingState>('loading', ['brief', 'hold', 'off'], 'brief'),
 });
 
 /** Keep the address bar's query in step with the switcher, so the URL always opens the cell on screen. */
 priceCaseStore.subscribe(() => {
-  const { price, history } = priceCaseStore.get();
+  const { price, history, loading } = priceCaseStore.get();
   const q = new URLSearchParams(window.location.search);
   q.set('case', price);
   q.set('history', history);
+  q.set('loading', loading);
   q.delete('option');
   window.history.replaceState(window.history.state, '', `${window.location.pathname}?${q}`);
 });

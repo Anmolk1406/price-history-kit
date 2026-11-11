@@ -2,6 +2,7 @@ import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from
 import crosshair from '@assets/pdp/price-history/hover-crosshair.svg';
 import hoverDot from '@assets/pdp/price-history/hover-dot.svg';
 import hoverMarker from '@assets/pdp/price-history/hover-marker.svg';
+import { useReducedMotion } from 'motion/react';
 import { PLOT, REGION_PLOT_LEFT } from './lib/chartGeom';
 import { dateAtX, fmtDay, priceAtY, type PlotData } from './lib/plot';
 import { formatMoney } from './lib/priceMath';
@@ -244,3 +245,66 @@ function Pointer({
   );
 }
 
+
+/** Loading placeholder for the plot — Figma "4 / Skeleton" (26711:36897): a neutral ghost curve (not data) with its
+ *  fade and an end dot. Drawn on a 257-wide canvas and stretched to the plot box; strokes don't
+ *  scale with it.
+ *
+ *  While it waits, the curve drifts slowly and gently between three close shapes (5s loop, ease-in-out each leg) so the graph reads as
+ *  "working". SMIL rather than CSS `d:`, which Safari doesn't animate; every shape has the same commands, so they
+ *  morph point for point. The end dot is HTML (a circle would stretch with the canvas), so it follows in CSS on the
+ *  same timing. Reduced motion holds the first shape. */
+const GHOST_W = 257;
+const GHOST_CURVES = [
+  'M1 52 C 26 46, 40 70, 64 66 C 92 61, 104 34, 132 40 C 160 46, 168 86, 196 92 C 220 97, 236 108, 256 112',
+  'M1 61 C 26 55, 40 55, 64 55 C 92 54.5, 104 56, 132 56 C 160 56, 168 68, 196 74 C 220 79, 236 94, 256 98',
+  'M1 46 C 26 41, 40 64, 64 63 C 92 62, 104 45, 132 46 C 160 47, 168 91, 196 96 C 220 100.5, 236 102, 256 105',
+];
+/** End y of each shape; keep in step with ghostDrift in Chart.module.css. */
+const GHOST_END_YS = [112, 98, 105];
+const GHOST_DUR = '5s';
+const GHOST_TIMES = '0; 0.33; 0.67; 1';
+const GHOST_SPLINES = '0.45 0 0.55 1; 0.45 0 0.55 1; 0.45 0 0.55 1';
+
+function Drift({ values }: { values: string[] }) {
+  return (
+    <animate
+      attributeName="d"
+      dur={GHOST_DUR}
+      repeatCount="indefinite"
+      calcMode="spline"
+      keyTimes={GHOST_TIMES}
+      keySplines={GHOST_SPLINES}
+      values={[...values, values[0]].join('; ')}
+    />
+  );
+}
+
+export function GhostChart({ plotWidth }: { plotWidth: number }) {
+  const gradientId = useId();
+  const reduce = useReducedMotion();
+  const endX = (plotWidth * 256) / GHOST_W;
+  const area = (c: string) => `${c} L 256 ${PLOT.height} L 1 ${PLOT.height} Z`;
+  // a fragment, like Chart: both children are absolutely placed, so the region's flex gap never counts them
+  return (
+    <>
+      <div aria-hidden className={`${styles.plot} ${styles.ghostPlot}`} style={{ width: plotWidth, height: PLOT.height }}>
+        <svg width={plotWidth} height={PLOT.height} viewBox={`0 0 ${GHOST_W} ${PLOT.height}`} preserveAspectRatio="none" fill="none">
+          <defs>
+            <linearGradient id={gradientId} x1="0" y1="34" x2="0" y2={PLOT.height} gradientUnits="userSpaceOnUse">
+              <stop className={styles.ghostStop} />
+              <stop className={styles.ghostStop} offset="1" stopOpacity="0" />
+            </linearGradient>
+          </defs>
+          <path d={area(GHOST_CURVES[0])} fill={`url(#${gradientId})`}>
+            {!reduce && <Drift values={GHOST_CURVES.map(area)} />}
+          </path>
+          <path d={GHOST_CURVES[0]} className={styles.ghostLine} vectorEffect="non-scaling-stroke">
+            {!reduce && <Drift values={GHOST_CURVES} />}
+          </path>
+        </svg>
+      </div>
+      <span aria-hidden className={`${styles.ghostDot} ${reduce ? '' : styles.ghostDotDrift}`} style={{ left: REGION_X + endX - 4, top: REGION_Y + GHOST_END_YS[0] - 4 }} />
+    </>
+  );
+}

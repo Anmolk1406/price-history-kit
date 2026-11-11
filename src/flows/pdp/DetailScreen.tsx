@@ -18,7 +18,7 @@ import { SfGallery } from './components/storefront/SfGallery';
 import { SfHeader, SfRailButtons } from './components/storefront/SfHeader';
 import { SfMainInfo } from './components/storefront/SfMainInfo';
 import { PriceHistorySheet } from './components/priceHistory/PriceHistorySheet';
-import { PRICE_CASES, priceCaseStore, VERDICT } from './components/priceCases/cases';
+import { LOADING_MS, PRICE_CASES, priceCaseStore, VERDICT } from './components/priceCases/cases';
 import { useDemoStore } from '../../kit/DemoStore';
 import { SfNewerModelCard } from './components/storefront/SfNewerModelCard';
 import { SfPaymentOffers } from './components/storefront/SfPaymentOffers';
@@ -245,10 +245,11 @@ export function DetailScreen({ params }: ScreenProps<{ productId: string; delive
         </motion.div>
         <PriceHistorySheet
           // a different case remounts the sheet, so its range pill resets to that case's default
-          key={`${priceCase.price}-${priceCase.history}`}
+          key={`${priceCase.price}-${priceCase.history}-${priceCase.loading}`}
           open={historyOpen}
           onClose={() => setHistoryOpen(false)}
           price={caseData.price}
+          loadingMs={LOADING_MS[priceCase.loading]}
           verdict={priceCase.history === 'lowest30' ? VERDICT : undefined}
           onAddToCart={() => {
             setHistoryOpen(false);

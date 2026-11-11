@@ -176,3 +176,48 @@
   height: 8px;
 }
 
+
+/* ---- loading ghost chart — 26711:36897 ---- */
+/* custom-color — price history skeleton, blue-tinted to sit with the placeholders: area #F3F6FC, ghost line #E6EBF5, end dot #DFE6F2 (no tokens) */
+.ghostPlot {
+  cursor: default;
+}
+
+.ghostStop {
+  stop-color: #f3f6fc;
+}
+
+.ghostLine {
+  stroke: #e6ebf5;
+  stroke-width: 1.5px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.ghostDot {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  box-sizing: border-box;
+  border-radius: 50%;
+  border: 1.5px solid var(--nk-palette-white);
+  background: #dfe6f2;
+}
+
+/* follows the curve's end: 112 -> 98 -> 105 -> 112 (GHOST_END_YS), same 5s loop and easing as the SMIL drift */
+@keyframes ghostDrift {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  33% {
+    transform: translateY(-14px);
+  }
+  67% {
+    transform: translateY(-7px);
+  }
+}
+
+.ghostDotDrift {
+  animation: ghostDrift 5s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
