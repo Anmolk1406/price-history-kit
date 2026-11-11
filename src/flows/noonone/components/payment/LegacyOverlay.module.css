@@ -1,0 +1,40 @@
+/* src/components/Overlay (styles.ts defaultStyles) — still used by VIPAddCard / VIPAddCvv / VIPMobilePay overlays */
+.root { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: flex-end; padding-top: var(--nk-layout-vip-sheet-top); z-index: 1; }
+.scrim { position: absolute; inset: 0; background: var(--nk-color-vip-scrim); }
+.empty { position: absolute; inset: 0; }
+/* container: borderRadius 5, white; bounceMargin 0 → paddingBottom 0 */
+.sheet { position: relative; display: flex; flex-direction: column; max-height: 100%; background: var(--nk-color-bg-surface); border-radius: var(--nk-radius-r4); will-change: transform; }
+.children { display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
+/* closeButton: 37 white circle, top −18, right 30, close-overlay icon */
+.close {
+  position: absolute;
+  top: var(--nk-layout-vip-legacy-close-top);
+  inset-inline-end: var(--nk-layout-vip-legacy-close-end);
+  z-index: 3;
+  width: var(--nk-layout-vip-legacy-close);
+  height: var(--nk-layout-vip-legacy-close);
+  border-radius: var(--nk-radius-r20);
+  background: var(--nk-color-bg-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.closeIcon { width: 15px; height: 15px; }
+
+/*
+ * iPhone Duo (bappzaar VIPOverlay / VIPOverlayBottomSheet chrome on a large screen; cec7f98b599, 4ad811b58ff): the
+ * scrim covers the whole window, the sheet keeps clear of the rail with the VIP r18 / 12 margin chrome, floats
+ * overlayBottomSpacing() = 14 above the bottom and is capped and centred on the open postures (502 / 520). Written with
+ * :where() so a screen's own Duo rule (floating Cart / AddCard) wins.
+ */
+:where(:global([data-posture='closed']), :global([data-posture='widePortrait']), :global([data-posture='landscape'])) .root {
+  padding-left: var(--nk-inset-left, 0px); padding-right: var(--nk-inset-right, 0px);
+}
+:where(:global([data-posture='closed']), :global([data-posture='widePortrait']), :global([data-posture='landscape'])) .sheet {
+  margin: 0 var(--nk-layout-vip-floating-inset) var(--nk-layout-vip-duo-sheet-bottom);
+  max-height: calc(100% - var(--nk-layout-vip-duo-sheet-bottom));
+  border-radius: var(--nk-radius-vip-sheet);
+}
+:where(:global([data-posture='widePortrait'])) .sheet { align-self: center; width: var(--nk-layout-vip-duo-sheet-portrait); max-width: 100%; margin-inline: 0; }
+:where(:global([data-posture='landscape'])) .sheet { align-self: center; width: var(--nk-layout-vip-duo-sheet-landscape); max-width: 100%; margin-inline: 0; }

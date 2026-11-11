@@ -1,0 +1,10 @@
+/* ReviewFooter — repo Footer: transparent bar over the page gradient, 12px 16px padding, CTA 52h. */
+.footer { background: transparent; }
+.bar { display: flex; gap: var(--nk-space-s12); padding: var(--nk-space-s12) var(--nk-space-s16) calc(var(--nk-inset-bottom) + var(--nk-space-s8)); }
+.footer[data-keyboard] .bar { padding-bottom: var(--nk-space-s12); }
+.bar > * { flex: 1; }
+.footer[data-gutter='tight'] .bar { padding-inline: var(--nk-space-s12); } /* @extended-by DeckScreen, SliderScreen */
+/* iPhone Duo (bappzaar NoonReviewProductScreenV2 inputStepFooterIphoneDuo + getNoonDuoBottomInset): still transparent and
+   shadowless; bottom padding 16 folded / landscape, 24 open portrait, and the keyboard lift (12) no longer applies. */
+:global([data-posture='closed']) .footer .bar, :global([data-posture='landscape']) .footer .bar { padding-bottom: var(--nk-space-s16); }
+:global([data-posture='widePortrait']) .footer .bar { padding-bottom: var(--nk-space-s24); }

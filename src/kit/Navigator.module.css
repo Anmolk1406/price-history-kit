@@ -1,0 +1,236 @@
+.root {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: var(--nk-color-bg-page);
+  isolation: isolate;
+}
+
+.screen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--nk-color-bg-page);
+  overflow: hidden;
+  will-change: transform;
+  box-shadow: -12px 0 32px var(--nk-palette-black-alpha8);
+}
+
+/* the darkening of a covered screen (ScreenTransition.underDim): a black layer whose opacity animates */
+.dim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: var(--nk-palette-black);
+  pointer-events: none;
+}
+
+/* a screen fully behind an opaque screen or modal, once the transition has settled: its body is not rendered at all
+   (no style, layout or paint; its own animations stop painting). The tab bar stays, so the next back lands crisp. */
+.screen[data-hidden] .screenBody {
+  content-visibility: hidden;
+}
+
+.screenBody {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.sheetLayer {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.scrim {
+  position: absolute;
+  inset: 0;
+  background: var(--nk-color-scrim);
+}
+
+.sheet {
+  position: relative;
+  max-height: 88%;
+  display: flex;
+  flex-direction: column;
+  background: var(--nk-color-bg-surface);
+  border-radius: var(--nk-radius-r24) var(--nk-radius-r24) 0 0;
+  padding-bottom: var(--nk-inset-bottom);
+  overflow: hidden;
+}
+
+.grabberZone {
+  display: flex;
+  justify-content: center;
+  padding: 8px 0 4px;
+  cursor: grab;
+  touch-action: none;
+  flex-shrink: 0;
+}
+
+.grabber {
+  width: 36px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--nk-color-border-strong);
+}
+
+/* Origin M-BottomSheet (default sheet layout) — Figma wFRKiKskxZ4vjIHbDVvngJ · 3207:15 */
+.originScrim {
+  position: absolute;
+  inset: 0;
+  background: var(--nk-sheet-scrim);
+}
+
+.originColumn {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100% - var(--nk-inset-top, 0px));
+  padding: 0 var(--nk-sheet-inset) max(var(--nk-inset-bottom), var(--nk-sheet-bottom-gap));
+}
+
+.originGrabberZone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--nk-sheet-grabber-zone);
+  flex-shrink: 0;
+  cursor: grab;
+  touch-action: none;
+}
+
+.originGrabber {
+  width: var(--nk-sheet-grabber-width);
+  height: var(--nk-sheet-grabber-height);
+  border-radius: var(--nk-sheet-grabber-radius);
+  background: var(--nk-sheet-grabber);
+}
+
+.originSheet {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  max-height: var(--nk-sheet-max-height);
+  background: var(--nk-sheet-bg);
+  border-radius: var(--nk-sheet-radius);
+  box-shadow: var(--nk-sheet-shadow);
+  overflow: hidden;
+}
+
+/* bappzaar OverlayBottomSheet isFloating (src/components/OverlayBottomSheet/{styles.ts,OverlayBottomSheet.tsx}) */
+.floatingScrim {
+  position: absolute;
+  inset: 0;
+  background: var(--nk-sheet-floating-scrim);
+}
+
+.floatingColumn {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100% - var(--nk-sheet-floating-top-gap));
+  padding: 0 var(--nk-sheet-floating-inset) max(var(--nk-inset-bottom), var(--nk-sheet-floating-bottom-gap));
+}
+
+.floatingSheet {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--nk-color-bg-surface);
+  border-radius: var(--nk-sheet-floating-radius);
+}
+
+.floatingChildren {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow-y: auto;
+  border-radius: var(--nk-sheet-floating-radius);
+}
+
+.floatingHandleZone {
+  position: absolute;
+  top: calc(-1 * var(--nk-sheet-floating-handle-offset));
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  /* larger hit area than the 4px bar, centred on it */
+  padding: 8px 0;
+  margin-top: -8px;
+  cursor: grab;
+  touch-action: none;
+  z-index: 1;
+}
+
+.floatingHandle {
+  width: 36px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--nk-sheet-floating-handle);
+}
+
+/* bappzaar src/components/BottomSheet (@gorhom/bottom-sheet) — `sheet: 'gorhom'` */
+.gorhomScrim {
+  position: absolute;
+  inset: 0;
+  background: var(--nk-sheet-gorhom-scrim);
+}
+
+.gorhomColumn {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100% - var(--nk-sheet-gorhom-top-gap));
+}
+
+.gorhomSheet {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  background: var(--nk-color-bg-surface);
+  border-radius: var(--nk-sheet-gorhom-radius) var(--nk-sheet-gorhom-radius) 0 0;
+}
+
+.toastLayer {
+  position: absolute;
+  left: var(--nk-snackbar-inset);
+  right: var(--nk-snackbar-inset);
+  bottom: calc(var(--nk-inset-bottom) + 72px);
+  z-index: 900;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.toastSlot {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+}
+
+/* iPhone Duo (bappzaar src/utils/OverlayBottomSheetWidth.ts getOverlayBottomSheetWidth: round(min(available,
+   clamp(available × 0.75, 440, 520))) → 502 open portrait, 520 landscape): sheets sit in the area clear of the rail,
+   capped and centred there; the scrim still covers the whole window. Folded, the 382 left of the rail is narrower
+   than the cap, so the sheet fills it. */
+.sheetLayer { padding-left: var(--nk-inset-left, 0px); padding-right: var(--nk-inset-right, 0px); }
+:global([data-posture='widePortrait']) .sheetLayer { --nk-sheet-max-width: 502px; }
+:global([data-posture='landscape']) .sheetLayer { --nk-sheet-max-width: 520px; }
+.sheetLayer > [data-sheet] { align-self: center; width: 100%; max-width: var(--nk-sheet-max-width, none); box-sizing: border-box; }
+/* The floating column pads the sheet by its inset, so the cap must include that padding: bappzaar's margin is
+   max(inset, (available − cap) / 2), i.e. the sheet is the full cap and the inset only bites when the cap doesn't fit. */
+.sheetLayer > [data-sheet='floating'] { max-width: calc(var(--nk-sheet-max-width, 100%) + 2 * var(--nk-sheet-floating-inset)); }

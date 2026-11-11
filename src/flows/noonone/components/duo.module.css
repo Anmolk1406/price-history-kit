@@ -1,0 +1,22 @@
+/*
+ * iPhone Duo frame for noon One screens (bappzaar features/vip/hooks/useVIPContainerWidth.tsx VIPScreenColumn +
+ * getVIPColumnWidth + getVIPRailPadding, components/VIPScreen; cec7f98b599, f3216ae606a). Phones never match these
+ * selectors. C = 504 when the window's short side is ≥ 600 (open portrait, landscape), else the whole area clear of the
+ * rail (382 folded). Landscape centres C in the area between a 16 start spacing and the rail.
+ */
+
+/* `.column`: inside a <Screen> that already pads itself clear of the rail (railInset default) */
+:global([data-posture='widePortrait']) .column { box-sizing: border-box; width: 100%; max-width: var(--nk-layout-vip-column); margin-inline: auto; }
+:global([data-posture='landscape']) .column {
+  box-sizing: border-box; width: 100%; max-width: var(--nk-layout-vip-column);
+  margin-left: calc((100% - var(--nk-layout-vip-column) + var(--nk-layout-vip-landscape-start)) / 2); margin-right: auto;
+}
+
+/* `.frame`: an element spanning the whole window, rail included (a railInset={false} screen, a layer over the screen) */
+
+:global([data-posture='closed']) .frame { box-sizing: border-box; width: auto; margin-left: var(--nk-inset-left, 0px); margin-right: var(--nk-inset-right, 0px); }
+:global([data-posture='widePortrait']) .frame { box-sizing: border-box; width: 100%; max-width: var(--nk-layout-vip-column); margin-inline: auto; }
+:global([data-posture='landscape']) .frame {
+  box-sizing: border-box; width: 100%; max-width: var(--nk-layout-vip-column); margin-right: auto;
+  margin-left: calc(var(--nk-inset-left, 0px) + var(--nk-layout-vip-landscape-start) + (100% - var(--nk-inset-left, 0px) - var(--nk-inset-right, 0px) - var(--nk-layout-vip-landscape-start) - var(--nk-layout-vip-column)) / 2);
+}

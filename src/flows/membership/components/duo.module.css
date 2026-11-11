@@ -1,0 +1,24 @@
+/*
+ * iPhone Duo frame for the membership screens (bappzaar features/vip/hooks/useVIPContainerWidth.tsx VIPScreenColumn +
+ * getVIPColumnWidth + getVIPRailPadding, components/VIPScreen; cec7f98b599, f3216ae606a). Same rules as
+ * src/flows/noonone/components/duo.module.css (flows don't import each other). Phones never match these selectors.
+ */
+
+/* `.column`: inside a <Screen> that already pads itself clear of the rail (railInset default) */
+:global([data-posture='widePortrait']) .column { box-sizing: border-box; width: 100%; max-width: var(--nk-space-mb-duo-column); margin-inline: auto; }
+:global([data-posture='landscape']) .column {
+  box-sizing: border-box; width: 100%; max-width: var(--nk-space-mb-duo-column);
+  margin-left: calc((100% - var(--nk-space-mb-duo-column) + var(--nk-space-mb-duo-landscape-start)) / 2); margin-right: auto;
+}
+
+/* `.frame`: an element spanning the whole window, rail included (a layer over the screen) */
+:global([data-posture='closed']) .frame { box-sizing: border-box; width: auto; margin-left: var(--nk-inset-left, 0px); margin-right: var(--nk-inset-right, 0px); }
+:global([data-posture='widePortrait']) .frame { box-sizing: border-box; width: 100%; max-width: var(--nk-space-mb-duo-column); margin-inline: auto; }
+:global([data-posture='landscape']) .frame {
+  box-sizing: border-box; width: 100%; max-width: var(--nk-space-mb-duo-column); margin-right: auto;
+  margin-left: calc(var(--nk-inset-left, 0px) + var(--nk-space-mb-duo-landscape-start) + (100% - var(--nk-inset-left, 0px) - var(--nk-inset-right, 0px) - var(--nk-space-mb-duo-landscape-start) - var(--nk-space-mb-duo-column)) / 2);
+}
+
+/* sticky CTA containers on a large screen (every Duo posture): flat (useVIPFlatFooterStyle) */
+:global([data-posture='closed']) .flat, :global([data-posture='widePortrait']) .flat, :global([data-posture='landscape']) .flat { box-shadow: none; }
+

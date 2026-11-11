@@ -1,0 +1,172 @@
+/*
+ * PDP styles. Every value is a token: global (--nk-color/space/radius/type/shadow-*), raw bappzaar
+ * palette (--nk-palette-*) or PDP flow tokens (--nk-*-pdp-*, src/flows/pdp/tokens.ts).
+ * Section → bappzaar file → value table: MAPPING.md.
+ */
+:global([dir='rtl'] .pdp-flip) { transform: scaleX(-1); }
+
+.btnReset { border: 0; background: none; padding: 0; margin: 0; cursor: pointer; font: inherit; color: inherit; text-align: inherit; }
+
+/* ── NoonSectionCard ── */
+.card { display: flex; flex-direction: column; background: var(--nk-color-bg-surface); border-radius: var(--nk-radius-r16); padding: var(--nk-space-s12); margin: 0 var(--nk-space-s12) var(--nk-space-s12); overflow: hidden; }
+.cardTitle { font: var(--nk-type-pdp-text16-bold); color: var(--nk-color-text-strong); }
+.gap8 { gap: var(--nk-space-s8); }
+.gap12 { gap: var(--nk-space-s12); }
+.gap16 { gap: var(--nk-space-s16); }
+.gap24 { gap: var(--nk-space-s24); }
+.list { padding-bottom: var(--nk-layout-pdp-list-bottom); background: var(--nk-color-bg-page); }
+/* NoonNativeStickyBar (placement embedded): floats at the bottom and follows the tab bar — slides down by the tab
+   height when ScrollVisibilityProvider hides the bar (--pdp-tab-hide 0 → 1, 0.15s ease-out); the tab bar itself also
+   drops the home-indicator inset (SfAtcBar .tabs) */
+.stickyBar { position: absolute; left: 0; right: 0; bottom: 0; transform: translateY(calc(var(--pdp-tab-hide, 0) * (var(--nk-layout-tab-bar) + var(--nk-tab-bar-floating-gap)))); pointer-events: none; }
+/* sections scroll over the pinned gallery (SfGallery .pin is z-index 0) */
+.list > * { position: relative; z-index: 1; }
+/* bappzaar bottomWrapper: content starts 20 above the gallery bottom (the first card's own 8 top margin included), and
+   galleryBottomBackground: an opaque page-grey layer from the gallery's bottom edge down that scrolls with the content */
+.rest { margin-top: calc(-1 * (var(--nk-space-s20) + var(--nk-space-s8))); isolation: isolate; }
+.rest::before { content: ''; position: absolute; inset: calc(var(--nk-space-s20) + var(--nk-space-s8)) 0 0; z-index: -1; background: var(--nk-color-bg-page); }
+
+/* ── iPhone Duo (bappzaar getPdpLayoutMetrics / NoonProductDetailsStickyBar; MAPPING.md § iPhone Duo) ── */
+/* sticky bar: the tabs live in the rail (closed, landscape), so the card stands alone at cappedWidth: 350 centred in the
+   382 folded content; 396 under the landscape right pane, centred in it (19 from its end). It never drops with a tab bar. */
+:global([data-posture='closed']) .stickyBar,
+:global([data-posture='landscape']) .stickyBar { transform: none; margin-inline: auto; }
+:global([data-posture='closed']) .stickyBar { width: var(--nk-layout-pdp-duo-bar-closed); }
+:global([data-posture='landscape']) .stickyBar { inset-inline-start: auto; inset-inline-end: var(--nk-layout-pdp-duo-bar-landscape-end); width: var(--nk-layout-pdp-duo-bar-landscape); }
+/* two columns (landscape, with a reviews section): gallery pane | sections up to the reviews, rails full width below */
+.below { display: flex; flex-direction: column; }
+.twoRow { display: flex; align-items: flex-start; }
+/* the left pane pins the gallery while the right pane scrolls past (translateY = clamp(scrollY, 0, release)); its bottom
+   margin holds it until the right pane's end reaches the viewport − 64 (galleryReleaseOffset): sticky stops at the row end */
+.twoRow > .galleryPane { flex: 0 0 var(--pdp-left-pane); min-width: 0; box-sizing: border-box; position: sticky; top: 0; z-index: 0; padding-top: var(--pdp-gallery-top); padding-inline-start: var(--nk-space-s16); margin-bottom: var(--pdp-gallery-release); }
+/* twoColumnGalleryRow (40 + 20) above the first right-pane row, then bottomWrapper −20 as on the phone */
+.twoRow > .rest { position: relative; flex: 0 0 var(--pdp-right-pane); min-width: 0; margin-top: calc(var(--pdp-gallery-row) - var(--nk-space-s20) - var(--nk-space-s8)); }
+
+/* ── Header (NoonScreenWithDrawBehindHeader + NoonExpandableSearch + NoonPDPHeaderRightContent) ── */
+
+/* ── Gallery (NoonGallery) ── */
+
+/* ── NoonProductInfo ── */
+
+/* PriceDiscounted (PDP styles) */
+
+/* NoonPDPBestPriceTagV2 */
+
+/* NoonKeyHighlights size="big" */
+
+/* NoonDealTagPdp + nudges */
+
+/* NoonDiscountTagList / NoonDiscountTag */
+
+/* ── Delivery Information ── */
+
+/* ── NoonPaymentsForYou ── */
+
+/* ── Variants (NoonSizeVariantSelection / NoonOptionsSelection / NoonSelectionItem) ── */
+
+/* NoonBestValueTag */
+
+/* ── NoonPdpReinforcement ── */
+
+/* ── Product Overview (NoonAccordion + NoonOverview / NoonHighlights / NoonSpecifications) ── */
+
+/* ── Additional Information (NoonShippingItem) ── */
+
+/* ── NoonSeller + NoonOffers ── */
+
+/* ── NoonCustomerReviews ── */
+
+/* ── NoonRecommendations ── */
+.recsList { display: flex; overflow-x: auto; scrollbar-width: none; padding-inline: var(--nk-space-s4) var(--nk-space-s12); }
+.recsList::-webkit-scrollbar { display: none; }
+.recsItem { flex-shrink: 0; display: flex; margin-inline-start: var(--nk-space-s8); margin-bottom: var(--nk-space-s12); }
+
+/* ── Sticky bar (NoonAddToCartQuantity, NoonInCartLabel, NoonBackToTop, NoonQuantitySelector) ── */
+.sticky { position: relative; }
+.backToTopWrap { position: absolute; left: 0; right: 0; top: var(--nk-layout-pdp-back-to-top-offset); display: flex; justify-content: center; pointer-events: none; z-index: 10; }
+.backToTop { composes: btnReset; pointer-events: auto; display: flex; align-items: center; padding: var(--nk-space-s8) var(--nk-space-s10); border-radius: var(--nk-radius-pdp-r25); background: var(--nk-palette-blue-gray900-alpha95); font: var(--nk-type-pdp-text13-semibold); color: var(--nk-color-text-inverse); }
+.inCart { overflow: hidden; }
+.inCartInner { display: flex; align-items: center; justify-content: center; gap: var(--nk-space-s4); padding: var(--nk-space-s8); background: var(--nk-color-brand); font: var(--nk-type-pdp-text14-medium); color: var(--nk-color-text-ink); white-space: nowrap; }
+.atcRow { display: flex; align-items: center; justify-content: space-between; gap: var(--nk-space-s8); padding: var(--nk-space-s8) var(--nk-space-s16); }
+.qtyLabel { margin-bottom: var(--nk-space-s2); font: var(--nk-type-pdp-text12-medium); color: var(--nk-color-text-tertiary); }
+.qtyValue { font: var(--nk-type-text16-bold-lh20); color: var(--nk-color-text-body); }
+.ctaBtn { composes: btnReset; flex: 1; min-width: 0; display: flex; align-items: center; justify-content: center; padding: var(--nk-space-s14) 0; border: 1px solid var(--nk-color-cta); border-radius: var(--nk-radius-r10); font: var(--nk-type-text14-bold-lh20); text-align: center; }
+.ctaBtn:active { opacity: var(--nk-layout-pdp-press-default-opacity); }
+.buyNow { composes: ctaBtn; background: var(--nk-color-bg-surface); color: var(--nk-color-cta); }
+.atc { composes: ctaBtn; position: relative; border-color: var(--nk-palette-pumpkin-orange); background: var(--nk-palette-pumpkin-orange); color: var(--nk-color-text-inverse); }
+.atc[data-loading] { background: var(--nk-color-border); border-width: 0; padding: calc(var(--nk-space-s14) + 1px) 0; color: var(--nk-color-text-secondary); } /* on the sticky card's glass */
+
+/* ── Quick cart sheet (NoonQuickCartScreen) ── */
+.quickCart { display: flex; flex-direction: column; overflow: hidden auto; scrollbar-width: none; background: var(--nk-color-bg-surface); }
+.quickInfo { padding: var(--nk-space-s20); overflow: hidden; }
+.quickRow { display: flex; align-items: center; margin-bottom: var(--nk-space-s12); }
+.checkWrapper { position: relative; flex-shrink: 0; width: var(--nk-layout-pdp-check-wrapper); height: var(--nk-layout-pdp-check-wrapper); margin-inline-end: var(--nk-space-s16); border-radius: var(--nk-radius-pdp-r40); display: flex; align-items: center; justify-content: center; }
+.checkImage { position: absolute; z-index: 1; }
+.checkOverlay { position: absolute; inset: 0; z-index: 1; border-radius: var(--nk-radius-pdp-r40); background: var(--nk-color-pdp-quick-cart-overlay); }
+.checkLottie { position: absolute; z-index: 2; width: var(--nk-layout-pdp-check-lottie); height: var(--nk-layout-pdp-check-lottie); pointer-events: none; }
+.quickText { flex: 1; min-width: 0; }
+.quickTitle { margin-bottom: var(--nk-space-s2); font: var(--nk-type-text16-bold-lh20); color: var(--nk-palette-new-black); }
+.quickSubtitle { font: var(--nk-type-text14-regular-lh20); color: var(--nk-palette-new-black); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.quickRecs { padding-top: var(--nk-space-s16); }
+.quickRecsTitle { padding: 0 var(--nk-space-s16); margin-bottom: var(--nk-space-s8); font: var(--nk-type-pdp-text19-bold); color: var(--nk-color-text-legacy); text-transform: capitalize; }
+.quickButtons { display: flex; justify-content: space-between; gap: var(--nk-space-s12); padding: 0 var(--nk-space-s16); background: var(--nk-color-bg-surface); }
+.quickBtn { composes: btnReset; flex: 1; display: flex; align-items: center; justify-content: center; border: 1px solid var(--nk-color-cta); border-radius: var(--nk-radius-r8); font: var(--nk-type-pdp-text13-bold); text-transform: uppercase; }
+.quickBtn:active { opacity: var(--nk-layout-pdp-press-default-opacity); }
+.quickClose { composes: quickBtn; padding: var(--nk-space-s12) 0; background: var(--nk-color-bg-surface); color: var(--nk-color-cta); }
+.quickCheckout { composes: quickBtn; background: var(--nk-color-cta); color: var(--nk-color-text-inverse); }
+
+/* ── Variants sheet (NoonVariantsOverlayScreen) ── */
+.variantsSheet { display: flex; flex-direction: column; min-height: 0; }
+.variantsScroll { overflow-y: auto; scrollbar-width: none; }
+.variantsHeader { display: flex; gap: var(--nk-space-s10); padding: var(--nk-space-s16); }
+.variantsImage { position: relative; width: var(--nk-layout-pdp-variants-image); flex-shrink: 0; border-radius: var(--nk-radius-r10); overflow: hidden; }
+.variantsImageOverlay { position: absolute; inset: 0; border-radius: var(--nk-radius-r10); border: var(--nk-layout-pdp-border-image) solid var(--nk-palette-border-primary); background: var(--nk-color-image-overlay); }
+.variantsInfo { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--nk-space-s4); padding-top: var(--nk-space-s6); }
+.variantsName { font: var(--nk-type-body); color: var(--nk-color-text-secondary); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.variantsPrice { display: flex; flex-wrap: wrap; align-items: baseline; }
+.variantsSale { margin-inline-end: var(--nk-space-s4); font: var(--nk-type-text16-bold-lh20); color: var(--nk-color-text-strong); }
+.variantsCur { font-weight: var(--nk-font-weight-semibold); color: var(--nk-color-text-product); }
+.variantsDiscountRow { display: inline-flex; align-items: center; gap: var(--nk-space-s4); margin-top: var(--nk-space-s4); }
+.variantsWas { font: var(--nk-type-body); color: var(--nk-palette-noon-grey2); text-decoration: line-through; }
+.variantsOff { font: var(--nk-type-pdp-text14-semibold); color: var(--nk-color-success-strong); }
+.variantsDelivery { display: flex; align-items: center; gap: var(--nk-space-s8); height: var(--nk-layout-pdp-variants-delivery); font: var(--nk-type-pdp-text12-semibold); color: var(--nk-color-text-primary); }
+.variantsDelivery b { font-weight: inherit; }
+.variantsSep { width: 90%; height: 1px; margin: 0 auto; background: var(--nk-color-border-subtle); flex-shrink: 0; }
+.variantsBody { padding-bottom: var(--nk-space-s12); }
+.sizeSection { padding-top: var(--nk-space-s16); }
+.sizeSectionTitleRow { display: flex; align-items: center; justify-content: space-between; min-height: var(--nk-layout-pdp-icon20); padding: 0 var(--nk-space-s16); }
+.sizeSectionTitle { font: var(--nk-type-pdp-text12-medium); letter-spacing: var(--nk-layout-pdp-tracking-wide); text-transform: uppercase; color: var(--nk-palette-dark-text-color-alpha60); }
+.sizeSectionTitle[data-warning] { color: var(--nk-color-pdp-error-message); }
+.cartChips { display: flex; overflow-x: auto; scrollbar-width: none; }
+.cartChips::-webkit-scrollbar { display: none; }
+.cartChip { composes: btnReset; flex: 1 0 auto; display: flex; align-items: center; justify-content: center; margin: var(--nk-space-s8) 0 var(--nk-space-s8) var(--nk-space-s8); padding: var(--nk-space-s8) var(--nk-space-s12); border: 1px solid var(--nk-palette-bright-grey-color); border-radius: var(--nk-radius-r8); overflow: hidden; }
+.cartChip:first-child { margin-inline-start: var(--nk-space-s16); }
+.cartChip:last-child { margin-inline-end: var(--nk-space-s16); }
+.cartChip[data-selected] { border-color: var(--nk-color-text-ink); }
+.cartChip[data-disabled] { border-style: dashed; border-color: var(--nk-color-border); cursor: default; }
+.cartChipText { padding: var(--nk-space-s4); text-align: center; font: var(--nk-type-pdp-text14); color: var(--nk-color-text-ink); }
+.cartChip[data-selected] .cartChipText { font-weight: var(--nk-font-weight-semibold); }
+.cartChip[data-disabled] .cartChipText { color: var(--nk-palette-silver); }
+.variantsFooter { flex-shrink: 0; display: flex; padding: var(--nk-space-s8) var(--nk-space-s16) var(--nk-space-s8); background: var(--nk-color-bg-surface); box-shadow: var(--nk-shadow-pdp-variants-footer); }
+.squareQty { composes: btnReset; width: var(--nk-layout-pdp-qty-square); height: var(--nk-layout-pdp-qty-square); margin-inline-end: var(--nk-space-s8); display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid var(--nk-palette-border-color); border-radius: var(--nk-radius-r8); background: var(--nk-color-bg-surface); }
+.squareQtyLabel { margin-bottom: var(--nk-space-s2); font: var(--nk-type-pdp-text12); color: var(--nk-palette-steel-color); }
+.squareQtyValue { font: var(--nk-type-pdp-text20-bold); color: var(--nk-color-text-legacy); }
+.squareAtc { composes: btnReset; flex: 1; height: var(--nk-layout-pdp-qty-square); display: flex; align-items: center; justify-content: center; padding: 0 var(--nk-space-s16); border-radius: var(--nk-radius-r8); background: var(--nk-color-cta); font: var(--nk-type-pdp-text14-bold); color: var(--nk-color-text-inverse); }
+.squareAtc:active { opacity: var(--nk-layout-pdp-press-default-opacity); }
+
+/* ── Live-data additions ── */
+/* NoonCategoryBestSellerTag (top): #F9F9FB r10 p12 gap8, html p 14 · b blueGray900 · a 600 accentBlue */
+
+/* NoonCategoryBestSeller (bottom CTA): white → mintCyanLight, 1px white border, py6 px4 r16 */
+
+/* NoonAccordion separator / muted title (Other Delivery Options) + NoonBuyingOption */
+
+/* NoonFrequentlyBoughtTogether */
+
+/* NoonAiProductReviewsSummary */
+
+/* NoonCustomerReviewItem images (120 × 128 r8, gap 8) */
+
+/* variant tile with a real photo */
+
+/* RecoCard (NoonProductBoxVertical carousel: productBoxV2 r10, 0.5px lightGray) */

@@ -1,0 +1,21 @@
+html,
+body,
+#root {
+  margin: 0;
+  min-height: 100%;
+  background: #111; /* token-lint-ignore — dev preview backdrop, outside the phone */
+}
+
+/* scripts/shot.mjs, check-routes and visual-snap screenshot this element */
+.pg-stage {
+  display: flex;
+  justify-content: center;
+  padding: 24px 0;
+}
+/* A previewed Duo is shorter than the iPhone and wider than tall in landscape: centre it in the window both ways. The
+   iPhone keeps its 24px top edge (stage screenshots and visual refs). */
+.pg-stage[data-device^='duo'] {
+  box-sizing: border-box;
+  min-height: 100vh;
+  align-items: center;
+}

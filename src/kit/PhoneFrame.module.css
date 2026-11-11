@@ -1,0 +1,56 @@
+/* No bezel: the screen itself is the device. The shadow is a rounded layer behind the squircle-clipped viewport (a
+   `filter: drop-shadow` on the device re-filtered the whole phone on every animated frame); at 48px blur the rounded
+   rectangle and the squircle read the same. */
+.device { position: relative; transform-origin: top center; flex-shrink: 0; }
+.device::before { content: ''; position: absolute; inset: 0; z-index: -1; border-radius: var(--nk-layout-screen-radius, 52px); box-shadow: 0 24px 48px var(--nk-palette-charcoal-navy-alpha16), 0 2px 6px var(--nk-palette-charcoal-navy-alpha8); }
+.frameless { transform-origin: top center; flex-shrink: 0; box-shadow: 0 10px 40px var(--nk-palette-charcoal-navy-alpha12); border-radius: 12px; overflow: hidden; }
+.viewport { position: relative; overflow: hidden; background: var(--nk-color-bg-surface); container-type: inline-size; }
+.frameless .viewport { border-radius: 12px; }
+.statusBar { position: absolute; top: 0; left: 0; right: 0; height: 62px; z-index: 1000; display: flex; align-items: center; justify-content: center; gap: 154px; padding: 21px 24px 19px; box-sizing: border-box; pointer-events: none; color: var(--nk-palette-black); } /* iOS status bar (Figma: 21 / 24 / 19 padding, 154 gap for the island) */
+.statusBar[data-tone='light'] { color: var(--nk-color-text-inverse); }
+.time { flex: 1 0 0; display: flex; justify-content: center; align-items: center; height: 22px; padding-top: 1.5px; box-sizing: border-box; font: 590 17px/22px -apple-system, 'SF Pro Text', 'SF Pro', var(--nk-font-family); letter-spacing: -0.41px; text-align: center; } /* token-lint-ignore: iOS status-bar clock (system font, device chrome, not a noon type style) */
+.sysIcons { flex: 1 0 0; display: flex; justify-content: center; align-items: center; gap: 7px; height: 22px; padding-top: 1px; box-sizing: border-box; } /* Figma pads 1 right too; dropped so the 76 px icon row centres on a whole pixel */
+.sysIcons svg { flex: none; display: block; }
+.homeIndicator { position: absolute; left: 50%; bottom: 8px; width: 140px; height: 5px; margin-left: -70px; border-radius: 3px; background: var(--nk-palette-black); z-index: 1000; pointer-events: none; }
+.homeIndicator[data-tone='light'] { background: var(--nk-color-bg-surface); }
+
+/* `fit`: the prototype opened on a phone or foldable fills the browser window; no shadow, no corners, no fake chrome */
+.fit { position: fixed; inset: 0; display: flex; }
+.fit .viewport { width: 100% !important; height: 100% !important; }
+
+/* open Duo (widePortrait): the status area is 84 tall (NOON_DUO_OPEN_PORTRAIT_TOP_INSET); the clock and icons sit at
+   its top like the phone's, with no island gap to clear */
+.statusBar[data-wide] { gap: 0; justify-content: space-between; padding-inline: 32px; }
+.statusBar[data-wide] .time, .statusBar[data-wide] .sysIcons { flex: none; }
+
+/* iPhone Duo rail column (closed and landscape: physical right), 84 wide, full height (bappzaar
+   DUO_SIDE_RAIL_WIDTH). It floats over the screens, which pad themselves clear of it. Drawn after the Figma "noon on
+   iPhone Duo" Side Container (5bhpdnIN0eKC10cYDKX6kI · 1:42296), which is what iOS renders for bappzaar's native rail
+   (src/components/NativeRail: the screen's leftButtons and rightButtons each become one glass group, the tabs a glass
+   pill): header (clock + status ring, then the button groups) at the top, the tab pill at the bottom, 24 from each
+   end. The tab pill keeps its place on every page because it is anchored to the bottom, not to what the buttons leave. */
+.rail { position: absolute; top: 0; bottom: 0; width: 84px; z-index: 900; box-sizing: border-box; padding: 24px 0; display: flex; flex-direction: column; align-items: center; justify-content: space-between; pointer-events: none; color: var(--nk-palette-black); }
+.rail[data-side='left'] { left: 0; }
+.rail[data-side='right'] { right: 0; }
+.rail[data-tone='light'] { color: var(--nk-color-text-inverse); }
+.railHeader { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+/* ReservedRegion: the clock (15 / 20 bold) over the 39-tall status ring (wifi, ring, four dots) */
+.railStatus { width: 88px; padding-top: 3px; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.railTime { font: var(--nk-type-text15-bold-lh20); text-align: center; } /* Noontree 15 / 20 bold */
+.railSignal { position: relative; width: 38px; height: 39px; }
+.railRing { position: absolute; left: 0; top: 0; width: 38px; height: 29.55px; background: currentColor; mask: url('../assets/shared/duo/rail-status-ring.svg') center / 100% 100% no-repeat; }
+.railWifi { position: absolute; left: 10px; top: 13px; width: 16.67px; height: 12.33px; background: currentColor; mask: url('../assets/shared/duo/rail-wifi.svg') center / 100% 100% no-repeat; }
+.railDots i { position: absolute; width: 4px; height: 4px; border-radius: var(--nk-radius-full); background: currentColor; }
+.railDots i:nth-child(1) { left: 8px; top: 32px; }
+.railDots i:nth-child(2) { left: 14px; top: 35px; }
+.railDots i:nth-child(3) { left: 20px; top: 35px; }
+.railDots i:nth-child(4) { left: 26px; top: 32px; }
+/* the button groups, 10 apart: one button is a 44 glass circle; two or more share a 48-wide glass pill, 36 buttons 12
+   apart, 8 top and bottom. Screens hand in their header IconButtons; in the rail they lose their own fill and border. */
+.railButtons { width: 48px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.railGroup { composes: glass from '../components/Glass/Glass.module.css'; position: relative; box-sizing: border-box; width: 48px; padding: 8px 0; display: flex; flex-direction: column; align-items: center; gap: 12px; border-radius: var(--nk-radius-full); }
+.railGroup:has(> :only-child) { width: 44px; height: 44px; padding: 4px; }
+.railGroup:empty { display: none; }
+.railGroup > * { width: 36px !important; height: 36px !important; background: transparent !important; border: 0 !important; box-shadow: none !important; }
+.railGroup > *, .railTabs > * { pointer-events: auto; }
+.railTabs { display: flex; justify-content: center; }

@@ -1,0 +1,88 @@
+/* OverlayBottomSheet + VIPOverlayBottomSheet chrome (see VipOverlay.tsx) */
+.root {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding-top: var(--nk-space-mb-sheet-top);
+  overflow: hidden;
+}
+.root[data-variant='popup'] {
+  justify-content: center;
+  padding-top: 0;
+}
+
+.backdrop {
+  position: absolute;
+  inset: 0;
+  background: var(--nk-color-mb-backdrop);
+}
+
+/* OverlayBottomSheet styles.container + VIPOverlayBottomSheet styles.sheet */
+.sheet {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  max-height: calc(100% - var(--nk-space-mb-overlay-float) - var(--nk-inset-bottom));
+  background: var(--nk-color-bg-surface);
+  border-radius: var(--nk-radius-mb-sheet);
+  margin-bottom: calc(var(--nk-space-mb-overlay-float) + var(--nk-inset-bottom));
+  touch-action: none;
+}
+.root[data-variant='popup'] .sheet {
+  margin: 0 var(--nk-space-s20);
+  border-radius: var(--nk-radius-mb-popup);
+}
+
+.children {
+  overflow: hidden;
+  border-radius: var(--nk-radius-mb-sheet);
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.root[data-variant='popup'] .children {
+  border-radius: var(--nk-radius-mb-popup);
+}
+
+/* handleContainer: absolute, top -18, centred · handle 36×4 r2 #B7B7B7 */
+.handleZone {
+  position: absolute;
+  top: var(--nk-space-mb-handle-top);
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+.handle {
+  pointer-events: auto;
+  width: 36px;
+  height: 4px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--nk-radius-r2);
+  background: var(--nk-color-mb-handle);
+  cursor: grab;
+}
+
+/*
+ * iPhone Duo (bappzaar VIPOverlayBottomSheet + getVIPOverlaySheetFrame + vipOverlayScreenOptions; cec7f98b599,
+ * 4ad811b58ff). The backdrop still covers the whole window, rail included; the sheet keeps clear of the rail with the
+ * 12 margins, floats overlayBottomSpacing() = 14 above the bottom, and is capped and centred on the open postures
+ * (502 portrait, 520 landscape). Popups keep their 20 margins inside the cap.
+ */
+:global([data-posture='closed']) .root, :global([data-posture='widePortrait']) .root, :global([data-posture='landscape']) .root {
+  padding-left: var(--nk-inset-left, 0px); padding-right: var(--nk-inset-right, 0px);
+}
+:global([data-posture='closed']) .sheet, :global([data-posture='widePortrait']) .sheet, :global([data-posture='landscape']) .sheet {
+  margin-inline: var(--nk-space-mb-overlay-float);
+  margin-bottom: var(--nk-space-mb-duo-sheet-bottom);
+  max-height: calc(100% - var(--nk-space-mb-duo-sheet-bottom));
+}
+:global([data-posture='widePortrait']) .sheet { align-self: center; width: var(--nk-space-mb-duo-sheet-portrait); max-width: 100%; margin-inline: 0; }
+:global([data-posture='landscape']) .sheet { align-self: center; width: var(--nk-space-mb-duo-sheet-landscape); max-width: 100%; margin-inline: 0; }
+:global([data-posture='closed']) .root[data-variant='popup'] .sheet { margin: 0 var(--nk-space-s20); }
+:global([data-posture='widePortrait']) .root[data-variant='popup'] .sheet, :global([data-posture='landscape']) .root[data-variant='popup'] .sheet { margin: 0; max-width: calc(100% - 2 * var(--nk-space-s20)); }
