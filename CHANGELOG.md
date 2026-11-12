@@ -5,7 +5,7 @@ All notable changes to `noon-kit`. Format: [Keep a Changelog](https://keepachang
 ## [Unreleased]
 
 ### Added
-- PDP price history: a "Past low" verdict case (today above a low from 30+ days ago), with a Price history chip whose bars tip into a falling staircase and a sheet pill "Price dropped by N%, N days ago" that opens on 3M.
+- PDP price history: a "Past low" verdict case (today above a low from 30+ days ago), with a Price history chip carrying the Figma trend icon (26968:11763) on a soft loop: bars changing height in turn, the arrow relaying on a trim path and a sheet pill "Price dropped by N%, N days ago" that opens on 3M.
 - PDP price history sheet: the verdict pill's "Ink" reveal (contents left to right, a warm band sweeping through once the graph has drawn) and an "Ink only" variant; switcher rows "Price verdict" and "Verdict pill".
 - PDP price history chart: scrubbing onto today's price when it is the window's low turns the marker warm ink and makes it breathe; range pills press to 0.96 and release on a soft spring.
 

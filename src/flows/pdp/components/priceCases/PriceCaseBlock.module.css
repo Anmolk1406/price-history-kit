@@ -35,17 +35,47 @@
 .bars { display: inline-flex; align-items: flex-end; gap: 1.05px; width: 16px; height: 16px; padding: 2.4px 0 3.2px 2.2px; box-sizing: border-box; } /* 26211:55321: bars end at y 12.8, not the box bottom */
 .bars > span { width: 2.1px; border-radius: 0.35px; background: var(--ph-ink); }
 
-/* Bars trend ("Past low") — once the PDP has settled (600ms), each bar re-settles from its rest height into a
-   falling staircase on the move spring, 60ms apart left to right, in the chip's own warm ink
-   (noon motion standard: move spring 544ms, stagger in 60ms). Lands at ~1.3s. */
-@keyframes barDown { from { height: var(--h0); } to { height: var(--h1); } }
-.bars[data-trend] > span {
-  --bar-delay: calc(600ms + var(--i) * var(--nk-motion-stagger-in));
-  /* the inline rest height stays the base; fill-mode both holds the staircase after the spring lands */
-  animation: barDown var(--nk-motion-move-ms) var(--nk-motion-move) var(--bar-delay) both;
+/* Trend icon ("Past low", TrendIcon.tsx) — Figma 26968:11763, looping softly while the chip is on screen. One 3.2s
+   cycle, starting once the PDP has settled (600ms); the icon is whole on arrival and never empty:
+     bars    10–36%  each shrinks to 72% of its height and back, from its bottom edge, left to right 90ms apart
+     arrow   0–55%   holds, fully drawn
+     arrow   55–100% relay: the trim clips it away tail first while the next arrow draws in from the tail behind it.
+   Lengths are in arrow units: line 16.877 (tail → corner), then both head legs 4.1 side by side, so an arrow is
+   20.977 long and the head trims symmetrically. Gap 14.684 (70% of an arrow), period 35.661. Every path offsets
+   the same pattern by where it starts along the arrow (line 0, legs 16.877) and travels one full period, which
+   lands the pattern exactly where it started, so the loop has no seam. */
+.trendIcon { --trend-at: 600ms; --trend-bars-at: calc(var(--trend-at) + 320ms); display: inline-flex; width: 16px; height: 16px; flex-shrink: 0; }
+.trendIcon svg { display: block; overflow: visible; }
+
+@keyframes trendBarHeight {
+  0%, 26%, 100% { transform: scaleY(1); }
+  13% { transform: scaleY(0.72); }
 }
+.trendBar {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: trendBarHeight 3200ms var(--nk-motion-fade-out) infinite both;
+}
+
+@keyframes trendTrimLine {
+  0%, 55% { stroke-dashoffset: 0; }
+  100% { stroke-dashoffset: -35.661; }
+}
+@keyframes trendTrimHead {
+  0%, 55% { stroke-dashoffset: 16.877; }
+  100% { stroke-dashoffset: -18.784; }
+}
+.trendTrimLine,
+.trendTrimHead { stroke-dasharray: 20.977 14.684; }
+.trendTrimLine { animation: trendTrimLine 3200ms var(--nk-motion-fade-out) var(--trend-at) infinite both; }
+.trendTrimHead { animation: trendTrimHead 3200ms var(--nk-motion-fade-out) var(--trend-at) infinite both; }
+
 @media (prefers-reduced-motion: reduce) {
-  .bars[data-trend] > span { animation: none; height: var(--h1) !important; }
+  .trendBar,
+  .trendTrimLine,
+  .trendTrimHead { animation: none; }
+  .trendTrimLine { stroke-dashoffset: 0; }
+  .trendTrimHead { stroke-dashoffset: 16.877; }
 }
 
 /* Verdict tooltip — 26211:55341: 32h peach fill, no stroke, pointer 8px above at x 24–40 */

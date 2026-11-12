@@ -1,24 +1,25 @@
-import { useEffect, useState, type CSSProperties } from 'react';
+import { useEffect, useState } from 'react';
 import { OriginIcon } from '../../../../components';
 import { discountPercent, formatPrice, money } from '../../../../data';
 import flashDealBg from '@assets/pdp/price-cases/flash-deal-bg.svg';
 import flashDealLogo from '@assets/pdp/price-cases/flash-deal-logo.svg';
 import { copy, PRICE_CASES, priceCaseStore, verdictFor, type PriceCase, type Verdict } from './cases';
 import styles from './PriceCaseBlock.module.css';
+import { TrendIcon } from './TrendIcon';
 
 /**
  * Price block for the price-history cases, replacing SfMainInfo's price row. Six cells:
  *
  *   normal · not lowest     price row + "Price history" chip          (24660:43629)
  *   normal · lowest 30      price row, then the verdict tooltip        (24651:128669)
- *   any    · past low       the chip, its bars tipping down
+ *   any    · past low       the chip with the Figma trend icon, looping (26968:11763)
  *   best   · either         best-price row above a demoted offer price (24660:52952 / 53209)
  *   ltd    · either         flash-deal header, red price chip          (24660:57916 / 59548)
  */
 export function PriceCaseBlock({ onOpenHistory }: { onOpenHistory: () => void }) {
   const { price: state, history } = priceCaseStore.useStore();
   const c = PRICE_CASES[state];
-  // "Lowest 30d" carries the verdict tooltip; "Past low" keeps the chip, whose bars tip down
+  // "Lowest 30d" carries the verdict tooltip; "Past low" keeps the chip, with the looping trend icon
   const lowest = history === 'lowest30' ? verdictFor(history, c.price) : undefined;
   const trend = history === 'lowestEarlier';
 
@@ -85,17 +86,15 @@ export function PriceHistoryChip({ onOpen, trend }: { onOpen: () => void; trend?
   );
 }
 
-/** The chip's bars at rest (26211:55321), and where `trend` takes them: a falling staircase, read as "price going down". */
-const BARS_REST = [4.3, 8.2, 10.4, 6.8];
-const BARS_DOWN = [10.4, 8.2, 6.2, 4.3];
-
-/** The 16px four-bar glyph from the chip (no Origin icon draws bars of these heights). With `trend`, the bars
- *  re-settle into a falling staircase, left to right (PriceCaseBlock.module.css, "bars trend"). */
+/** The 16px four-bar glyph from the chip (no Origin icon draws bars of these heights). With `trend` ("Past low") it
+ *  is the Figma "Price history" tag icon instead (PDP-new-features 26968:11763: three bars over a down-trend arrow),
+ *  looping (TrendIcon.tsx). */
 function PriceHistoryBars({ trend }: { trend?: boolean }) {
+  if (trend) return <TrendIcon />;
   return (
-    <span className={styles.bars} data-trend={trend || undefined} aria-hidden>
-      {BARS_REST.map((h, i) => (
-        <span key={i} style={{ height: h, '--h0': `${h}px`, '--h1': `${BARS_DOWN[i]}px`, '--i': i } as CSSProperties} />
+    <span className={styles.bars} aria-hidden>
+      {[4.3, 8.2, 10.4, 6.8].map((h, i) => (
+        <span key={i} style={{ height: h }} />
       ))}
     </span>
   );
