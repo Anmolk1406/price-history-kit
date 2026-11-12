@@ -2,11 +2,12 @@ import { useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from '
 import { AnimatePresence, motion, useDragControls, useReducedMotion, type PanInfo } from 'motion/react';
 import trendDown from '@assets/pdp/price-history/trend-down.svg';
 import { SheetDecor } from './SheetDecor';
-import { Chart, GhostChart } from './Chart';
+import { Chart, REVEAL_MS } from './Chart';
 import { glyph, moneyParts } from './lib/money';
 import { plotWidthFor, type RangeKey } from './lib/chartGeom';
 import { computedPlot } from './lib/plot';
-import { buildSeries } from './lib/series';
+import { buildSeries, type SeriesOpts } from './lib/series';
+import { OriginIcon } from '../../../../components';
 import { SHEET_CHROME, sheetMetrics } from './lib/sheet';
 import styles from './PriceHistorySheet.module.css';
 import sk from './Skeleton.module.css';
@@ -26,8 +27,9 @@ const DISMISS_VELOCITY = 650;
 const SHEET_ENTER_MS = 370;
 /** The white chart card on a 375 screen (351 sheet less its 12px gutters). */
 const DESIGN_REGION_W = 327;
-/** The verdict pill's arrow plays this long after the graph starts drawing: the 900ms reveal, then a 1s pause. */
-const VERDICT_AFTER_GRAPH_MS = 900 + 1000;
+/** When the verdict pill's reveal starts, counted from when the graph starts drawing: 100ms before the sheet's slide
+ *  ends, so the pill is already arriving as the sheet settles. */
+const VERDICT_AFTER_GRAPH_MS = -100;
 /** Skeleton label widths (26711:36897): y labels alternate so the column doesn't read as one stripe. */
 const SK_Y_W = [38, 34, 38, 34];
 const SK_X_W = [36, 34, 36, 30, 36];
@@ -47,6 +49,8 @@ export function PriceHistorySheet({
   price,
   loadingMs = 0,
   verdict,
+  seriesOpts,
+  pillReveal = true,
   onAddToCart,
   onBuyNow,
 }: {
@@ -55,13 +59,19 @@ export function PriceHistorySheet({
   price: number;
   /** Loading skeleton (26711:36897): shown this long after the sheet lands; null holds it, 0 skips it. */
   loadingMs?: number | null;
-  verdict?: string;
+  /** Verdict pill copy and icon, and the range tab the sheet opens on. */
+  verdict?: { long: string; icon: 'trend-down' | 'calendar'; range: RangeKey };
+  /** How the price history is drawn (see buildSeries); built from the same opts as the verdict copy. */
+  seriesOpts?: SeriesOpts;
+  /** false: the verdict pill is already in place when the sheet lands, and only its ink sweep plays. */
+  pillReveal?: boolean;
   onAddToCart?: () => void;
   onBuyNow?: () => void;
 }) {
   // A verdict adds its pill under the price, and the sheet's height follows.
   const v = sheetMetrics({ verdict: !!verdict });
-  const [range, setRange] = useState<RangeKey>(v.defaultRange);
+  // the verdict picks the opening tab, so the low it claims is the one on screen
+  const [range, setRange] = useState<RangeKey>(verdict?.range ?? v.defaultRange);
   // The graph waits out the slide so it draws on a sheet that has already
   // landed; a tab change has no slide to wait for, so it draws immediately.
   const [chartDelay, setChartDelay] = useState(SHEET_ENTER_MS);
@@ -118,13 +128,10 @@ export function PriceHistorySheet({
     });
   }, [skeleton, regionW, open]);
 
-  // Series ends exactly on `price`; with a verdict, that last point is the 30-day low.
-  const series = useMemo(() => buildSeries(price, new Date(), { endOnLow: !!verdict }), [price, verdict]);
+  // Series ends exactly on `price`; the opts place the low the verdict talks about.
+  const { lowDays, lowAgo } = seriesOpts ?? {};
+  const series = useMemo(() => buildSeries(price, new Date(), { lowDays, lowAgo }), [price, lowDays, lowAgo]);
   const plot = useMemo(() => computedPlot(series, range, plotWidthFor(regionW)), [series, range, regionW]);
-  // 26211:55300 — "Price dropped by 20% in last 30 days": the drop from the series' price 30 days ago.
-  const monthAgo = series[series.length - 30]?.price ?? price;
-  const dropPct = Math.max(0, Math.round(((monthAgo - price) / monthAgo) * 100));
-  const verdictText = `Price dropped by ${dropPct}% in last 30 days`;
 
   // AnimatePresence keeps the sheet mounted through its exit, so closing is
   // just handing control back to the parent.
@@ -210,9 +217,19 @@ export function PriceHistorySheet({
                         Animates once the graph has drawn: the arrow, then a shimmer through the text. */}
                     {verdict && skeleton && <span aria-hidden data-sk className={`${sk.sk} ${styles.skVerdict}`} />}
                     {verdict && !skeleton && (
-                      <div className={`${styles.verdict} ${fadeIn}`} style={{ '--ph-after-graph': `${chartDelay + VERDICT_AFTER_GRAPH_MS}ms` } as CSSProperties}>
-                        <img src={trendDown} alt="" aria-hidden className={`${styles.icon20} ${styles.trendIn}`} />
-                        <p className={`${styles.verdictText} ${styles.textShimmer}`}>{verdictText}</p>
+                      <div
+                        className={styles.verdict}
+                        data-static={pillReveal ? undefined : ''}
+                        style={{ '--ph-after-graph': `${chartDelay + VERDICT_AFTER_GRAPH_MS}ms`, '--ph-ink-at': `${chartDelay + REVEAL_MS}ms` } as CSSProperties}
+                      >
+                        <span className={styles.verdictIcon}>
+                          {verdict.icon === 'trend-down' ? (
+                            <img src={trendDown} alt="" aria-hidden className={styles.icon20} />
+                          ) : (
+                            <OriginIcon name={verdict.icon} size={20} color="#913d09" /* custom-color — verdict ink, as the trend arrow (no token) */ />
+                          )}
+                        </span>
+                        <p className={styles.verdictText}>{verdict.long}</p>
                       </div>
                     )}
                   </div>
@@ -285,8 +302,9 @@ export function PriceHistorySheet({
                         </div>
 
                         {/* plot + scrub — 24660:45721 / 66553, pointer 24660:66565.
-                            Keyed so switching tab remounts it and replays the reveal. */}
-                        {skeleton ? <GhostChart plotWidth={plot.width} /> : <Chart key={range} plot={plot} regionWidth={regionW} enterDelay={chartDelay} />}
+                            Keyed so switching tab remounts it and replays the reveal. The skeleton draws no graph: only
+                            the axis placeholders show until the data lands. */}
+                        {!skeleton && <Chart key={range} plot={plot} regionWidth={regionW} enterDelay={chartDelay} />}
                       </div>
                     </div>
                   </div>

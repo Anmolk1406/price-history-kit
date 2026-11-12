@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { HISTORY_STATES, LOADING_STATES, PRICE_STATES, priceCaseStore, type CaseOption } from './cases';
+import { HISTORY_STATES, LOADING_STATES, PILL_STATES, PRICE_STATES, priceCaseStore, type CaseOption } from './cases';
 import styles from './CaseSwitcher.module.css';
 
 /**
@@ -24,13 +24,14 @@ export function CaseSwitcher() {
 }
 
 function Panel() {
-  const { price, history, loading } = priceCaseStore.useStore();
+  const { price, history, loading, pill } = priceCaseStore.useStore();
   return (
     <div className={styles.panel}>
       <div className={styles.title}>Price history cases</div>
       <Group label="Price block" options={PRICE_STATES} value={price} onChange={(v) => priceCaseStore.patch({ price: v })} />
-      <Group label="30-day verdict" options={HISTORY_STATES} value={history} onChange={(v) => priceCaseStore.patch({ history: v })} />
+      <Group label="Price verdict" options={HISTORY_STATES} value={history} onChange={(v) => priceCaseStore.patch({ history: v })} />
       <Group label="Loading" options={LOADING_STATES} value={loading} onChange={(v) => priceCaseStore.patch({ loading: v })} />
+      <Group label="Verdict pill" options={PILL_STATES} value={pill} onChange={(v) => priceCaseStore.patch({ pill: v })} />
     </div>
   );
 }

@@ -39,7 +39,8 @@
   animation: chartReveal 900ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
-/* Scrub pointer entrance — plays after the reveal (a JS timer mounts these). */
+/* Scrub pointer entrance — plays after the reveal (a JS timer mounts these). Fill mode is `both`: the dot and the pill
+   start on a delay, and without a backwards fill they'd show at full opacity for that delay, vanish, then fade in. */
 @keyframes pointerLineIn {
   from {
     opacity: 0;
@@ -74,15 +75,15 @@
 }
 
 .lineIn {
-  animation: pointerLineIn 320ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: pointerLineIn 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .dotIn {
-  animation: pointerDotIn 260ms cubic-bezier(0.34, 1.56, 0.64, 1) 60ms forwards;
+  animation: pointerDotIn 260ms cubic-bezier(0.34, 1.56, 0.64, 1) 60ms both;
 }
 
 .pillIn {
-  animation: pointerPillIn 260ms cubic-bezier(0.22, 1, 0.36, 1) 120ms forwards;
+  animation: pointerPillIn 260ms cubic-bezier(0.22, 1, 0.36, 1) 120ms both;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -176,48 +177,54 @@
   height: 8px;
 }
 
-
-/* ---- loading ghost chart — 26711:36897 ---- */
-/* custom-color — price history skeleton, blue-tinted to sit with the placeholders: area #F3F6FC, ghost line #E6EBF5, end dot #DFE6F2 (no tokens) */
-.ghostPlot {
-  cursor: default;
+/* Breathing on the lowest price: a slow in-out cycle (1.6s, fade-out curve both ways, so it eases at each end like a
+   breath). The halo swells from the marker and thins as it grows; the marker itself swells 15% in step. */
+@keyframes markerHaloBreathe {
+  0%,
+  100% {
+    transform: scale(1.2);
+    opacity: 0.45;
+  }
+  50% {
+    transform: scale(2.6);
+    opacity: 0.12;
+  }
 }
-
-.ghostStop {
-  stop-color: #f3f6fc;
+@keyframes markerBreathe {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.15);
+  }
 }
-
-.ghostLine {
-  stroke: #e6ebf5;
-  stroke-width: 1.5px;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.ghostDot {
+.markerHalo {
+  pointer-events: none;
   position: absolute;
   width: 8px;
   height: 8px;
+  border-radius: 50%;
+  background: #913d09; /* custom-color — price history warm ink, as the lowest price in the pill (no token) */
+  animation: markerHaloBreathe 1600ms var(--nk-motion-fade-out) infinite both;
+}
+.markerLow {
+  /* the hover marker (8px, 1px white ring) drawn in warm ink, as the lowest price and its halo */
   box-sizing: border-box;
   border-radius: 50%;
-  border: 1.5px solid var(--nk-palette-white);
-  background: #dfe6f2;
+  border: 1px solid var(--nk-palette-white);
+  background: #913d09; /* custom-color — price history warm ink (no token) */
 }
-
-/* follows the curve's end: 112 -> 98 -> 105 -> 112 (GHOST_END_YS), same 5s loop and easing as the SMIL drift */
-@keyframes ghostDrift {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  33% {
-    transform: translateY(-14px);
-  }
-  67% {
-    transform: translateY(-7px);
-  }
+.markerBreathe {
+  animation: markerBreathe 1600ms var(--nk-motion-fade-out) infinite both;
 }
-
-.ghostDotDrift {
-  animation: ghostDrift 5s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+@media (prefers-reduced-motion: reduce) {
+  .markerHalo {
+    animation: none;
+    transform: scale(1.8);
+    opacity: 0.25;
+  }
+  .markerBreathe {
+    animation: none;
+  }
 }

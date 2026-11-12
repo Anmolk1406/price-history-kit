@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
 import { OriginIcon } from '../../../../components';
 import { discountPercent, formatPrice, money } from '../../../../data';
 import flashDealBg from '@assets/pdp/price-cases/flash-deal-bg.svg';
 import flashDealLogo from '@assets/pdp/price-cases/flash-deal-logo.svg';
-import { copy, PRICE_CASES, priceCaseStore, VERDICT, type PriceCase } from './cases';
+import { copy, PRICE_CASES, priceCaseStore, verdictFor, type PriceCase, type Verdict } from './cases';
 import styles from './PriceCaseBlock.module.css';
 
 /**
@@ -11,15 +11,18 @@ import styles from './PriceCaseBlock.module.css';
  *
  *   normal · not lowest     price row + "Price history" chip          (24660:43629)
  *   normal · lowest 30      price row, then the verdict tooltip        (24651:128669)
+ *   any    · past low       the chip, its bars tipping down
  *   best   · either         best-price row above a demoted offer price (24660:52952 / 53209)
  *   ltd    · either         flash-deal header, red price chip          (24660:57916 / 59548)
  */
 export function PriceCaseBlock({ onOpenHistory }: { onOpenHistory: () => void }) {
   const { price: state, history } = priceCaseStore.useStore();
   const c = PRICE_CASES[state];
-  const lowest = history === 'lowest30';
+  // "Lowest 30d" carries the verdict tooltip; "Past low" keeps the chip, whose bars tip down
+  const lowest = history === 'lowest30' ? verdictFor(history, c.price) : undefined;
+  const trend = history === 'lowestEarlier';
 
-  if (c.ltd) return <LtdBlock c={c} lowest={lowest} onOpenHistory={onOpenHistory} />;
+  if (c.ltd) return <LtdBlock c={c} lowest={lowest} trend={trend} onOpenHistory={onOpenHistory} />;
 
   const priceRow = <PriceText c={c} demoted={c.bestPrice !== undefined} />;
   return (
@@ -28,12 +31,12 @@ export function PriceCaseBlock({ onOpenHistory }: { onOpenHistory: () => void })
       {lowest ? (
         <div className={styles.withTooltip}>
           {priceRow}
-          <VerdictTooltip onOpen={onOpenHistory} />
+          <VerdictTooltip verdict={lowest} onOpen={onOpenHistory} />
         </div>
       ) : (
         <div className={styles.withChip}>
           {priceRow}
-          <PriceHistoryChip onOpen={onOpenHistory} />
+          <PriceHistoryChip onOpen={onOpenHistory} trend={trend} />
         </div>
       )}
     </div>
@@ -70,11 +73,11 @@ function BestPriceRow({ value }: { value: number }) {
 }
 
 /** Entry point — 24824:202774: white, 1px border, r8, h28, brown bars + "Price history" + chevron. */
-export function PriceHistoryChip({ onOpen }: { onOpen: () => void }) {
+export function PriceHistoryChip({ onOpen, trend }: { onOpen: () => void; trend?: boolean }) {
   return (
     <button type="button" className={styles.chip} onClick={onOpen} aria-label={copy.priceHistory}>
       <span className={styles.chipBody}>
-        <PriceHistoryBars />
+        <PriceHistoryBars trend={trend} />
         <span className={styles.chipLabel}>{copy.priceHistory}</span>
       </span>
       <OriginIcon name="chevron-right" size={12} color="var(--nk-color-text-secondary)" />
@@ -82,24 +85,29 @@ export function PriceHistoryChip({ onOpen }: { onOpen: () => void }) {
   );
 }
 
-/** The 16px four-bar glyph from the chip (no Origin icon draws bars of these heights). */
-function PriceHistoryBars() {
+/** The chip's bars at rest (26211:55321), and where `trend` takes them: a falling staircase, read as "price going down". */
+const BARS_REST = [4.3, 8.2, 10.4, 6.8];
+const BARS_DOWN = [10.4, 8.2, 6.2, 4.3];
+
+/** The 16px four-bar glyph from the chip (no Origin icon draws bars of these heights). With `trend`, the bars
+ *  re-settle into a falling staircase, left to right (PriceCaseBlock.module.css, "bars trend"). */
+function PriceHistoryBars({ trend }: { trend?: boolean }) {
   return (
-    <span className={styles.bars} aria-hidden>
-      {[4.3, 8.2, 10.4, 6.8].map((h, i) => (
-        <span key={i} style={{ height: h }} />
+    <span className={styles.bars} data-trend={trend || undefined} aria-hidden>
+      {BARS_REST.map((h, i) => (
+        <span key={i} style={{ height: h, '--h0': `${h}px`, '--h1': `${BARS_DOWN[i]}px`, '--i': i } as CSSProperties} />
       ))}
     </span>
   );
 }
 
 /** Verdict tooltip — 26211:55341: peach, r8, pointer above at x 24–40; verdict left, "Price history ›" right. */
-function VerdictTooltip({ onOpen }: { onOpen: () => void }) {
+function VerdictTooltip({ verdict, onOpen }: { verdict: Verdict; onOpen: () => void }) {
   return (
     <div className={styles.tooltip}>
       <span className={styles.verdict}>
-        <OriginIcon name="trend-down" size={20} color="var(--ph-ink)" />
-        {VERDICT}
+        <OriginIcon name={verdict.icon} size={20} color="var(--ph-ink)" />
+        {verdict.short}
       </span>
       <button type="button" className={styles.tooltipLink} onClick={onOpen} aria-label={copy.priceHistory}>
         {copy.priceHistory}
@@ -111,7 +119,7 @@ function VerdictTooltip({ onOpen }: { onOpen: () => void }) {
 
 /** "Deal active" — 24660:57916 / 59548: flash-deal header with a live countdown, the price in a slanted red chip, MRP
  *  + % off, and the chip on the right (or the verdict tooltip under the row). */
-function LtdBlock({ c, lowest, onOpenHistory }: { c: PriceCase; lowest: boolean; onOpenHistory: () => void }) {
+function LtdBlock({ c, lowest, trend, onOpenHistory }: { c: PriceCase; lowest?: Verdict; trend?: boolean; onOpenHistory: () => void }) {
   const ltd = c.ltd!;
   const left = useCountdown(ltd.countdownSec);
   return (
@@ -132,12 +140,12 @@ function LtdBlock({ c, lowest, onOpenHistory }: { c: PriceCase; lowest: boolean;
         </span>
         {!lowest && (
           <span className={styles.ltdChip}>
-            <PriceHistoryChip onOpen={onOpenHistory} />
+            <PriceHistoryChip onOpen={onOpenHistory} trend={trend} />
           </span>
         )}
       </div>
 
-      {lowest && <VerdictTooltip onOpen={onOpenHistory} />}
+      {lowest && <VerdictTooltip verdict={lowest} onOpen={onOpenHistory} />}
     </div>
   );
 }

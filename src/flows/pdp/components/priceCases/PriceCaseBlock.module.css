@@ -35,6 +35,19 @@
 .bars { display: inline-flex; align-items: flex-end; gap: 1.05px; width: 16px; height: 16px; padding: 2.4px 0 3.2px 2.2px; box-sizing: border-box; } /* 26211:55321: bars end at y 12.8, not the box bottom */
 .bars > span { width: 2.1px; border-radius: 0.35px; background: var(--ph-ink); }
 
+/* Bars trend ("Past low") — once the PDP has settled (600ms), each bar re-settles from its rest height into a
+   falling staircase on the move spring, 60ms apart left to right, in the chip's own warm ink
+   (noon motion standard: move spring 544ms, stagger in 60ms). Lands at ~1.3s. */
+@keyframes barDown { from { height: var(--h0); } to { height: var(--h1); } }
+.bars[data-trend] > span {
+  --bar-delay: calc(600ms + var(--i) * var(--nk-motion-stagger-in));
+  /* the inline rest height stays the base; fill-mode both holds the staircase after the spring lands */
+  animation: barDown var(--nk-motion-move-ms) var(--nk-motion-move) var(--bar-delay) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .bars[data-trend] > span { animation: none; height: var(--h1) !important; }
+}
+
 /* Verdict tooltip — 26211:55341: 32h peach fill, no stroke, pointer 8px above at x 24–40 */
 .tooltip {
   position: relative; display: flex; align-items: center; justify-content: space-between; height: 32px; margin-top: 8px; padding: 0 var(--nk-space-s6) 0 var(--nk-space-s8);

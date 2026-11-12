@@ -14,16 +14,20 @@ function mulberry32(seed: number): () => number {
 }
 
 const DAYS = 400;
-/** With `endOnLow`, every other day in the last 30 sits at least this far above
- *  the current price, so the last point is strictly the 30-day low. */
+/** With `lowDays`, every other day in that window sits at least this far above
+ *  the current price, so the last point is strictly the low over it. */
 const LOW_MARGIN = 0.004;
 
 /** Series whose final point is exactly `current`. Prices move the way a buy box
  *  does: they hold for a few days, then step up or down around a slowly easing
  *  level, with short sales that dip and recover and the odd price rise.
- *  `endOnLow` (the verdict case) guarantees the last point is the 30-day low;
+ *  `lowDays` (the verdict cases) guarantees the last point is the low over that many days;
  *  without it, a sale three weeks ago dips below today so the verdict stays off. */
-export function buildSeries(current: number, today: Date, opts: { endOnLow?: boolean } = {}): PricePoint[] {
+/** `lowDays`: today is strictly the low over that many days. `lowAgo`: today sits above a low that ended that many
+ *  days ago, and nothing else in the last 90 days goes under it. Neither: a short sale ~3 weeks ago dips below today. */
+export type SeriesOpts = { lowDays?: number; lowAgo?: number };
+
+export function buildSeries(current: number, today: Date, opts: SeriesOpts = {}): PricePoint[] {
   const rnd = mulberry32(20260908);
   const between = (lo: number, hi: number) => lo + rnd() * (hi - lo);
   const prices: number[] = [];
@@ -53,9 +57,16 @@ export function buildSeries(current: number, today: Date, opts: { endOnLow?: boo
   const settle = 4;
   for (let i = DAYS - settle; i < DAYS; i++) out[i] = current;
 
-  if (opts.endOnLow) {
+  if (opts.lowDays) {
     const floor = current * (1 + LOW_MARGIN);
-    for (let i = DAYS - 30; i < DAYS - settle; i++) out[i] = Math.max(out[i], floor);
+    for (let i = DAYS - opts.lowDays; i < DAYS - settle; i++) out[i] = Math.max(out[i], floor);
+  } else if (opts.lowAgo) {
+    // a 5-day sale 6% under today, ending `lowAgo` days ago; the rest of the 3M window stays above it
+    const low = Math.round(current * 0.94); // a whole price, as a real sale would be
+    const end = DAYS - 1 - opts.lowAgo;
+    for (let i = end - 4; i <= end; i++) out[i] = low;
+    const floor = low * (1 + LOW_MARGIN);
+    for (let i = DAYS - 90; i < DAYS; i++) if (i < end - 4 || i > end) out[i] = Math.max(out[i], floor);
   } else {
     // a short sale ~3 weeks ago below today's price
     for (let i = DAYS - 22; i < DAYS - 17; i++) out[i] = Math.min(out[i], current * 0.95);
@@ -66,4 +77,11 @@ export function buildSeries(current: number, today: Date, opts: { endOnLow?: boo
     date.setDate(date.getDate() - (DAYS - 1 - i));
     return { date, price: Math.round(price * 100) / 100 };
   });
+}
+
+/** The lowest point in the last `days` (the latest day of it, when a sale holds the low for several). */
+export function lowestIn(series: PricePoint[], days: number): PricePoint | undefined {
+  let best: PricePoint | undefined;
+  for (const p of series.slice(-days)) if (p.price !== null && (!best || p.price <= (best.price as number))) best = p;
+  return best;
 }

@@ -150,56 +150,91 @@
   padding: 0 12px 0 8px;
 }
 
-/* The verdict pill animates after the graph, once per open:
-     graph    370–1270ms   (sheet slide 370, then the 900ms reveal)
-     pause    1s
-     arrow    2270–2970ms  shown throughout; lifts back up its own direction, then drops down it with a small bounce
-     shimmer  2970ms+      a light band sweeps through the text straight after */
-@keyframes trendDraw {
-  0% {
-    transform: translate(0, 0);
-  }
-  30% {
-    transform: translate(-2.5px, -2.5px);
-  }
-  62% {
-    transform: translate(2px, 2px);
-  }
-  82% {
-    transform: translate(-0.5px, -0.5px);
-  }
-  100% {
-    transform: translate(0, 0);
-  }
+/* ---- verdict reveal ----
+   The pill arrives with the sheet: from --ph-after-graph (100ms before the sheet's slide ends) it fades in and its
+   contents travel in left to right, landing in ~650ms. The "Ink" accent waits for the graph: at --ph-ink-at (the
+   moment the graph finishes drawing) a soft band of warm tint travels through the pill left to right (1.8s, eased in
+   and out): it enters past the left edge and leaves past the right one, so the pill ends plain white with nothing
+   left to fade. Inside: the icon slides in from the left
+   (+60ms), its arrow drops in along its own direction (+80ms), then the text slides in from the left (+120ms), each
+   unblurring as it comes. Slides ride the move spring (--nk-motion-move, 544ms); opacity / blur the fade-in curve. */
+.verdictIcon { display: inline-flex; flex-shrink: 0; }
+
+@keyframes phFade { from { opacity: 0; } to { opacity: 1; } }
+/* The band sits in the middle of a 300%-wide gradient (34–66%), inside the clear thirds either side: at 100% the pill shows the
+   clear right third (band off its left edge), at 0 the clear left third (band gone past the right edge). */
+@keyframes phInk {
+  from { background-position: 100% 0; }
+  to { background-position: 0 0; }
+}
+@keyframes phUnblur { from { opacity: 0; filter: blur(4px); } to { opacity: 1; filter: none; } }
+@keyframes phSlideIn { from { transform: translateX(var(--ph-slide-from)); } to { transform: none; } }
+/* the arrow: from 5px up-left it drops down-right past its spot by 1.5px and settles back, the price falling and landing */
+@keyframes phArrowDrop {
+  0% { opacity: 0; transform: translate(-5px, -5px); }
+  35% { opacity: 1; }
+  65% { transform: translate(1.5px, 1.5px); }
+  100% { opacity: 1; transform: translate(0, 0); }
 }
 
-.trendIn {
-  animation: trendDraw 700ms cubic-bezier(0.33, 1, 0.68, 1) var(--ph-after-graph, 2270ms) both;
+.verdict {
+  position: relative;
+  isolation: isolate;
+  animation: phFade var(--nk-motion-fade-ms) var(--nk-motion-fade-in) var(--ph-after-graph) both;
+}
+.verdict::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  /* custom-color — the verdict tint #FEF6F1 deepened toward #FCE3D3 for the sweep (no token) */
+  background: linear-gradient(
+      90deg,
+      rgba(252, 227, 211, 0) 0%,
+      rgba(252, 227, 211, 0) 34%,
+      #fef6f1 42%,
+      #fce3d3 50%,
+      #fef6f1 58%,
+      rgba(252, 227, 211, 0) 66%,
+      rgba(252, 227, 211, 0) 100%
+    )
+    100% 0 / 300% 100% no-repeat;
+  animation: phInk 1800ms var(--nk-motion-fade-out) var(--ph-ink-at) both;
+}
+.verdict .verdictIcon {
+  --ph-slide-from: -6px;
+  animation:
+    phUnblur var(--nk-motion-fade-reveal-ms) var(--nk-motion-fade-in) calc(var(--ph-after-graph) + 60ms) both,
+    phSlideIn var(--nk-motion-move-ms) var(--nk-motion-move) calc(var(--ph-after-graph) + 60ms) both;
+}
+.verdict .verdictIcon img {
+  animation: phArrowDrop 560ms var(--nk-motion-fade-in) calc(var(--ph-after-graph) + 80ms) both;
+}
+.verdict .verdictText {
+  --ph-slide-from: -10px;
+  animation:
+    phUnblur 400ms var(--nk-motion-fade-in) calc(var(--ph-after-graph) + 120ms) both,
+    phSlideIn var(--nk-motion-move-ms) var(--nk-motion-move) calc(var(--ph-after-graph) + 120ms) both;
 }
 
-@keyframes textShimmer {
-  from {
-    background-position: 100% 0;
-  }
-  to {
-    background-position: 0 0;
-  }
-}
-
-/* custom-color — the shimmer's highlight is the verdict ink #913D09 lifted toward peach (no token) */
-.textShimmer {
-  background: linear-gradient(100deg, #913d09 0%, #913d09 40%, #f0b48c 50%, #913d09 60%, #913d09 100%) 100% 0 / 300% 100%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  animation: textShimmer 900ms cubic-bezier(0.4, 0, 0.2, 1) calc(var(--ph-after-graph, 2270ms) + 700ms) both;
+/* "Ink only" variant: the pill sits in place from the start (no fade, no slides, no arrow drop); the sweep still runs */
+.verdict[data-static],
+.verdict[data-static] .verdictIcon,
+.verdict[data-static] .verdictIcon img,
+.verdict[data-static] .verdictText {
+  animation: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .trendIn,
-  .textShimmer {
+  .verdict,
+  .verdict::before,
+  .verdict .verdictIcon,
+  .verdict .verdictIcon img,
+  .verdict .verdictText {
     animation: none;
   }
+  .verdict::before { display: none; }
 }
 
 /* ---- chart card ---- */
@@ -263,6 +298,19 @@
   padding: 0 10px;
   backdrop-filter: blur(4px);
   cursor: pointer;
+  /* Press: down to the standard 0.96 fast (90ms ease-out), back up on a very soft spring (ζ 0.6, ω 20 → ~9.5% of the
+     4% travel, a 0.4% overshoot that reads as give, not bounce; settled in ~450ms). */
+  --ph-press-spring: linear(0.0, 0.0398, 0.1395, 0.2737, 0.4218, 0.5685, 0.7032, 0.8194, 0.9141, 0.9866, 1.0382, 1.0713, 1.089, 1.0947, 1.0916, 1.0826, 1.0701, 1.0561, 1.0421, 1.0292, 1.018, 1.0089, 1.0018, 0.9967, 0.9935, 0.9917, 0.991, 0.9913, 0.9921, 0.9932, 1.0);
+  transition: transform 450ms var(--ph-press-spring);
+  -webkit-tap-highlight-color: transparent;
+}
+.pill:active {
+  transform: scale(var(--nk-motion-press));
+  transition-duration: 90ms;
+  transition-timing-function: ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .pill { transition: none; }
 }
 
 .pillActive {
